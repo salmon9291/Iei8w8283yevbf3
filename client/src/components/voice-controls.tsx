@@ -38,38 +38,85 @@ export function VoiceControls({
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
       recognitionRef.current.lang = 'es-ES';
+      recognitionRef.current.maxAlternatives = 1;
 
       recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        onTranscriptReceived(transcript);
+        if (event.results && event.results.length > 0) {
+          const transcript = event.results[0][0].transcript;
+          if (transcript && transcript.trim()) {
+            onTranscriptReceived(transcript);
+          }
+        }
         setIsListening(false);
+      };
+
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
       };
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
       };
 
-      recognitionRef.current.onerror = () => {
+      recognitionRef.current.onerror = (event: any) => {
         setIsListening(false);
+        console.error('Speech recognition error:', event.error);
+        
+        let errorMessage = "Error desconocido";
+        switch(event.error) {
+          case 'no-speech':
+            errorMessage = "No se detectó voz. Intenta hablar más claro.";
+            break;
+          case 'audio-capture':
+            errorMessage = "No se pudo acceder al micrófono.";
+            break;
+          case 'not-allowed':
+            errorMessage = "Permiso de micrófono denegado.";
+            break;
+          case 'network':
+            errorMessage = "Error de conexión. Verifica tu internet.";
+            break;
+          default:
+            errorMessage = `Error: ${event.error}`;
+        }
+        
         toast({
-          title: "Error de micrófono",
-          description: "No se pudo acceder al micrófono",
+          title: "Error de reconocimiento de voz",
+          description: errorMessage,
           variant: "destructive",
         });
       };
+    } else {
+      toast({
+        title: "Reconocimiento de voz no disponible",
+        description: "Tu navegador no soporta reconocimiento de voz",
+        variant: "destructive",
+      });
     }
   }, [toast, onTranscriptReceived]);
 
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      setIsListening(true);
-      recognitionRef.current.start();
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting recognition:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo iniciar el reconocimiento de voz",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping recognition:', error);
+      }
       setIsListening(false);
     }
   };

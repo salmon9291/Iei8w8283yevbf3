@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", async (req, res) => {
     try {
       const validatedData = insertMessageSchema.parse(req.body);
-      
+
       // Save user message
       const userMessage = await storage.createMessage(validatedData);
 
@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let aiResponse = "";
       try {
         const customPrompt = req.body.customPrompt || "Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.";
-        
+
         const geminiResponse = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
           {
@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/battle-message", async (req, res) => {
     try {
       const { prompt, aiId, username } = req.body;
-      
+
       const geminiResponse = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
         {

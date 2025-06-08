@@ -14,7 +14,7 @@ interface ChatInterfaceProps {
   onClearUsername: () => void;
 }
 
-type TabType = 'chat' | 'voice' | 'ai-battle' | 'settings';
+type TabType = 'chat' | 'voice' | 'ai-battle' | 'settings' | 'accounts';
 
 export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
@@ -22,6 +22,8 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   const [lastAiMessage, setLastAiMessage] = useState<string>("");
   const [aiPrompt, setAiPrompt] = useState("Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.");
   const [tempPrompt, setTempPrompt] = useState(aiPrompt);
+  const [savedChats, setSavedChats] = useState<any[]>([]);
+  const [currentChatName, setCurrentChatName] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -99,10 +101,93 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     });
   };
 
+  const saveCurrentChat = () => {
+    if (!currentChatName.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor ingresa un nombre para el chat",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (messages.length === 0) {
+      toast({
+        title: "Error",
+        description: "No hay mensajes para guardar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const chatData = {
+      id: Date.now(),
+      name: currentChatName.trim(),
+      messages: messages,
+      username: username,
+      createdAt: new Date().toISOString(),
+      prompt: aiPrompt
+    };
+
+    const existingSaved = JSON.parse(localStorage.getItem('savedChats') || '[]');
+    const updatedChats = [...existingSaved, chatData];
+    localStorage.setItem('savedChats', JSON.stringify(updatedChats));
+    setSavedChats(updatedChats);
+    setCurrentChatName("");
+
+    toast({
+      title: "Chat guardado",
+      description: `Chat "${chatData.name}" guardado exitosamente`,
+    });
+  };
+
+  const loadSavedChats = () => {
+    const saved = JSON.parse(localStorage.getItem('savedChats') || '[]');
+    setSavedChats(saved);
+  };
+
+  const loadChat = (chatData: any) => {
+    // Esta función necesitaría ser implementada en el hook useChat
+    toast({
+      title: "Función no implementada",
+      description: "La carga de chats se implementará en una actualización futura",
+      variant: "destructive",
+    });
+  };
+
+  const deleteChat = (chatId: number) => {
+    const existingSaved = JSON.parse(localStorage.getItem('savedChats') || '[]');
+    const updatedChats = existingSaved.filter((chat: any) => chat.id !== chatId);
+    localStorage.setItem('savedChats', JSON.stringify(updatedChats));
+    setSavedChats(updatedChats);
+
+    toast({
+      title: "Chat eliminado",
+      description: "El chat ha sido eliminado exitosamente",
+    });
+  };
+
+  const deleteAllChats = () => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar todos los chats guardados? Esta acción no se puede deshacer.")) {
+      localStorage.removeItem('savedChats');
+      setSavedChats([]);
+      toast({
+        title: "Todos los chats eliminados",
+        description: "Se han eliminado todos los chats guardados",
+      });
+    }
+  };
+
+  // Cargar chats guardados al montar el componente
+  useEffect(() => {
+    loadSavedChats();
+  }, []);
+
   const tabs = [
     { id: 'chat' as TabType, label: 'Chat', icon: '💬' },
     { id: 'voice' as TabType, label: 'Voz', icon: '🎤' },
-    { id: 'ai-battle' as TabType, label: 'Batalla IA', icon: '⚔️' },
+    { id: 'ai-battle' as TabType, label: 'Debate', icon: '🗣️' },
+    { id: 'accounts' as TabType, label: 'Chats', icon: '💾' },
     { id: 'settings' as TabType, label: 'Configuración', icon: '⚙️' },
   ];
 
@@ -133,8 +218,8 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
             </div>
 
             {/* Message Input */}
-            <div className="bg-white border-t border-gray-100 px-6 py-4">
-              <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
+            <div className="bg-white border-t border-gray-100 px-3 md:px-6 py-3 md:py-4">
+              <form onSubmit={handleSendMessage} className="flex items-center space-x-2 md:space-x-3">
                 <div className="flex-1 relative">
                   <Input
                     type="text"
@@ -142,7 +227,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Escribe tu mensaje..."
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50"
                     maxLength={1000}
                     disabled={isSending}
                   />
@@ -151,12 +236,12 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                 <Button
                   type="submit"
                   disabled={!messageText.trim() || isSending}
-                  className="bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gray-800 hover:bg-gray-900 text-white p-2 md:p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSending ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-white"></div>
                   ) : (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                     </svg>
                   )}
@@ -179,6 +264,99 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
       case 'ai-battle':
         return <AIBattleTab username={username} />;
+
+      case 'accounts':
+        return (
+          <div className="flex-1 p-3 md:p-6 space-y-4 md:space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">💾 Gestión de Chats</h3>
+              
+              {/* Guardar chat actual */}
+              <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-800">Guardar Chat Actual</h4>
+                <div className="flex space-x-2">
+                  <Input
+                    value={currentChatName}
+                    onChange={(e) => setCurrentChatName(e.target.value)}
+                    placeholder="Nombre del chat..."
+                    className="flex-1 text-sm"
+                  />
+                  <Button
+                    onClick={saveCurrentChat}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 md:px-4 text-sm"
+                  >
+                    Guardar
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Mensajes actuales: {messages.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Lista de chats guardados */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-800">Chats Guardados ({savedChats.length})</h4>
+                {savedChats.length > 0 && (
+                  <Button
+                    onClick={deleteAllChats}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                  >
+                    Eliminar Todos
+                  </Button>
+                )}
+              </div>
+
+              {savedChats.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-sm">No tienes chats guardados</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-64 md:max-h-96 overflow-y-auto">
+                  {savedChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium text-gray-900 truncate text-sm">
+                          {chat.name}
+                        </h5>
+                        <p className="text-xs text-gray-500">
+                          {chat.messages.length} mensajes • {new Date(chat.createdAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          Usuario: {chat.username}
+                        </p>
+                      </div>
+                      <div className="flex space-x-1 ml-2">
+                        <Button
+                          onClick={() => loadChat(chat)}
+                          size="sm"
+                          variant="outline"
+                          className="text-xs px-2 py-1"
+                        >
+                          Cargar
+                        </Button>
+                        <Button
+                          onClick={() => deleteChat(chat.id)}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-2 py-1"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
 
       case 'settings':
         return (
@@ -232,13 +410,13 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
       <div className="flex-1 flex flex-col">
         {/* Header with Tabs */}
         <div className="bg-white border-b border-gray-100">
-          <div className="px-6 py-3 border-b border-gray-100">
+          <div className="px-3 md:px-6 py-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-white rounded-full"></div>
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full"></div>
                 </div>
-                <span className="text-sm font-medium text-gray-700">{username}</span>
+                <span className="text-xs md:text-sm font-medium text-gray-700 truncate max-w-32 md:max-w-none">{username}</span>
               </div>
 
               <Button
@@ -246,10 +424,10 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                 size="sm"
                 onClick={handleClearChat}
                 disabled={isClearing}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                className="p-1 md:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 title="Limpiar chat"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                 </svg>
               </Button>
@@ -257,19 +435,19 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 px-6">
+          <div className="flex space-x-0 md:space-x-1 px-2 md:px-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                className={`flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-gray-50 text-gray-900 border-b-2 border-gray-800'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="text-sm md:text-base">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -359,27 +537,27 @@ function AIBattleTab({ username }: { username: string }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">🥊 Batalla de IAs</h2>
-        <p className="text-gray-600 mb-4">
+    <div className="flex-1 flex flex-col p-3 md:p-6">
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">🗣️ Debate entre IAs</h2>
+        <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4">
           Dos IAs con personalidades diferentes debatirán sobre el tema que elijas.
         </p>
         
-        <div className="flex space-x-3 mb-4">
+        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 mb-4">
           <Input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Tema para el debate (ej: inteligencia artificial, cambio climático...)"
-            className="flex-1"
+            placeholder="Tema para el debate (ej: inteligencia artificial...)"
+            className="flex-1 text-sm"
             disabled={isRunning}
           />
           <Button
             onClick={startBattle}
             disabled={!topic.trim() || isRunning}
-            className="bg-red-600 hover:bg-red-700 text-white px-6"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 md:px-6 text-sm md:text-base w-full md:w-auto"
           >
-            {isRunning ? 'Debatiendo...' : 'Iniciar Batalla'}
+            {isRunning ? 'Debatiendo...' : 'Iniciar Debate'}
           </Button>
         </div>
         
@@ -399,7 +577,7 @@ function AIBattleTab({ username }: { username: string }) {
             className={`flex ${message.sender === 'ai1' ? 'justify-start' : 'justify-end'}`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                 message.sender === 'ai1'
                   ? 'bg-blue-100 text-blue-900'
                   : 'bg-red-100 text-red-900'
@@ -408,7 +586,7 @@ function AIBattleTab({ username }: { username: string }) {
               <div className="text-xs font-medium mb-1">
                 {message.aiName} • Ronda {message.round}
               </div>
-              <div className="text-sm">{message.content}</div>
+              <div className="text-xs md:text-sm">{message.content}</div>
             </div>
           </div>
         ))}
