@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useChat } from "@/hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
+import { VoiceControls } from "./voice-controls";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 
 interface ChatInterfaceProps {
   username: string;
@@ -14,13 +14,11 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [showVoicePanel, setShowVoicePanel] = useState(false);
+  const [lastAiMessage, setLastAiMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
-  
+
   const {
     messages,
     isLoading,
@@ -32,18 +30,15 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     error,
   } = useChat(username);
 
-  // Auto-speak AI responses when voice is enabled
+  // Track last AI message for voice controls
   useEffect(() => {
-    if (messages.length > 0 && voiceEnabled) {
+    if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.sender === 'ai') {
-        // Small delay to ensure message is rendered
-        setTimeout(() => {
-          speakMessage(lastMessage.content);
-        }, 500);
+        setLastAiMessage(lastMessage.content);
       }
     }
-  }, [messages, voiceEnabled]);
+  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -59,36 +54,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     }
   }, [error, toast]);
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'es-ES';
-
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setMessageText(transcript);
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onerror = () => {
-        setIsListening(false);
-        toast({
-          title: "Error de micrófono",
-          description: "No se pudo acceder al micrófono",
-          variant: "destructive",
-        });
-      };
-    }
-  }, [toast]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -96,15 +61,15 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedMessage = messageText.trim();
-    
+
     if (!trimmedMessage || isSending) return;
-    
+
     sendMessage({ content: trimmedMessage });
     setMessageText("");
   };
 
   const handleClearChat = () => {
-    if (window.confirm("Are you sure you want to clear the chat history?")) {
+    if (window.confirm("¿Estás seguro de que quieres limpiar el historial del chat?")) {
       clearMessages();
     }
   };
@@ -116,201 +81,117 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     }
   };
 
-  const startListening = () => {
-    if (recognitionRef.current && !isListening) {
-      setIsListening(true);
-      recognitionRef.current.start();
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  };
-
-  const speakMessage = (text: string) => {
-    if (!voiceEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    
-    const utterance = new window.SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-ES';
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const stopSpeaking = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsSpeaking(false);
-  };
-
-  const toggleVoice = () => {
-    setVoiceEnabled(!voiceEnabled);
-    if (isSpeaking) {
-      stopSpeaking();
-    }
+  const handleVoiceTranscript = (transcript: string) => {
+    setMessageText(transcript);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Minimal Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-100 px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-full"></div>
+              </div>
+              <span className="text-sm font-medium text-gray-700">{username}</span>
             </div>
-            <span className="text-sm font-medium text-gray-700">{username}</span>
-          </div>
-          
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearChat}
-              disabled={isClearing}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              title="Limpiar chat"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-              </svg>
-            </Button>
+
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowVoicePanel(!showVoicePanel)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                title="Controles de voz"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2V4c0-1.1.9-2 2-2zm5.3 4.7c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4C17.2 9.4 18 10.6 18 12s-.8 2.6-2.1 3.9c-.4.4-.4 1 0 1.4.2.2.5.3.7.3s.5-.1.7-.3C19.1 15.5 20 13.8 20 12s-.9-3.5-2.7-5.3zM4 9v6h4l5 5V4L8 9H4z"/>
+                </svg>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearChat}
+                disabled={isClearing}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                title="Limpiar chat"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-        {isLoading ? (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
-          </div>
-        ) : (
-          <>
-            {/* Chat Messages */}
-            {messages.map((message) => (
-              <MessageBubble 
-                key={message.id} 
-                message={message} 
-                onSpeak={message.sender === 'ai' ? () => speakMessage(message.content) : undefined}
-              />
-            ))}
-
-            {/* Typing Indicator */}
-            {isTyping && <TypingIndicator />}
-
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
-
-      {/* Voice Controls Section */}
-      <div className="bg-gray-50 border-t border-gray-100 px-6 py-3">
-        <div className="flex items-center justify-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleVoice}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-              title={voiceEnabled ? "Desactivar voz" : "Activar voz"}
-            >
-              {voiceEnabled ? (
-                <Volume2 className="w-4 h-4" />
-              ) : (
-                <VolumeX className="w-4 h-4" />
-              )}
-            </Button>
-            <span className="text-xs text-gray-600">
-              {voiceEnabled ? "Voz activada" : "Voz desactivada"}
-            </span>
-          </div>
-
-          <div className="h-4 w-px bg-gray-300"></div>
-
-          <div className="flex items-center space-x-2">
-            <Button
-              type="button"
-              onClick={isListening ? stopListening : startListening}
-              disabled={isSending || !recognitionRef.current}
-              className={`p-3 rounded-full transition-all ${
-                isListening 
-                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg scale-110' 
-                  : 'bg-gray-800 hover:bg-gray-900 text-white shadow-md hover:shadow-lg'
-              }`}
-              title={isListening ? "Detener grabación" : "Mantén presionado para hablar"}
-            >
-              {isListening ? (
-                <MicOff className="w-5 h-5" />
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
-            </Button>
-            <span className="text-xs text-gray-600">
-              {isListening ? "Escuchando..." : "Toca para hablar"}
-            </span>
-          </div>
-
-          {isSpeaking && (
+        {/* Messages Container */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+          {isLoading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
+            </div>
+          ) : (
             <>
-              <div className="h-4 w-px bg-gray-300"></div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={stopSpeaking}
-                  className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
-                  title="Detener voz"
-                >
-                  <div className="w-4 h-4 border-2 border-current rounded-sm"></div>
-                </Button>
-                <span className="text-xs text-red-600">Hablando...</span>
-              </div>
+              {messages.map((message) => (
+                <MessageBubble 
+                  key={message.id} 
+                  message={message} 
+                />
+              ))}
+
+              {isTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
             </>
           )}
         </div>
+
+        {/* Message Input */}
+        <div className="bg-white border-t border-gray-100 px-6 py-4">
+          <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
+            <div className="flex-1 relative">
+              <Input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Escribe tu mensaje..."
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50"
+                maxLength={1000}
+                disabled={isSending}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={!messageText.trim() || isSending}
+              className="bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSending ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              )}
+            </Button>
+          </form>
+        </div>
       </div>
 
-      {/* Message Input */}
-      <div className="bg-white border-t border-gray-100 px-6 py-4">
-        <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
-          <div className="flex-1 relative">
-            <Input
-              type="text"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Escribe tu mensaje..."
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50"
-              maxLength={1000}
-              disabled={isSending}
-            />
-          </div>
-          
-          <Button
-            type="submit"
-            disabled={!messageText.trim() || isSending}
-            className="bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSending ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            )}
-          </Button>
-        </form>
-      </div>
+      {/* Voice Panel */}
+      {showVoicePanel && (
+        <div className="w-80 border-l border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+          <VoiceControls
+            onTranscriptReceived={handleVoiceTranscript}
+            isProcessing={isSending}
+            lastAiMessage={lastAiMessage}
+          />
+        </div>
+      )}
     </div>
   );
 }

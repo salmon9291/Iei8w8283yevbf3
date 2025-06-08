@@ -40,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: validatedData.content
+                  text: `Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida. Responde a la siguiente pregunta o comentario: ${validatedData.content}`
                 }]
               }]
             })
@@ -52,10 +52,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const geminiData = await geminiResponse.json();
-        aiResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response.";
+        aiResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "Lo siento, no pude generar una respuesta.";
       } catch (error) {
         console.error("Gemini API error:", error);
-        aiResponse = "I'm sorry, I'm having trouble connecting to my AI service right now. Please try again later.";
+        aiResponse = "Lo siento, tengo problemas para conectarme a mi servicio de IA en este momento. Por favor, inténtalo de nuevo más tarde.";
       }
 
       // Save AI response

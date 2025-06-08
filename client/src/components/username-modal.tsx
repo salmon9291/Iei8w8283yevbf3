@@ -28,9 +28,9 @@ export function UsernameModal({ isOpen, onSubmit }: UsernameModalProps) {
             <div className="w-4 h-4 bg-white rounded-full"></div>
           </div>
           <DialogTitle className="text-lg font-medium text-gray-900 mb-1">
-            Chat con AI
+            Chat con IA en Español
           </DialogTitle>
-          <p className="text-sm text-gray-600">Ingresa tu nombre para comenzar</p>
+          <p className="text-sm text-gray-600">Ingresa tu nombre para comenzar a chatear</p>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
