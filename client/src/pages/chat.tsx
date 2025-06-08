@@ -1,40 +1,46 @@
+
 import { useState, useEffect } from "react";
-import { UsernameModal } from "@/components/username-modal";
 import { ChatInterface } from "@/components/chat-interface";
+import { AuthModal } from "@/components/auth-modal";
 
 export default function Chat() {
-  const [username, setUsername] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [showAuth, setShowAuth] = useState(true);
 
   useEffect(() => {
-    const savedUsername = localStorage.getItem("gemini_chat_username");
-    if (savedUsername) {
-      setUsername(savedUsername);
+    // Verificar si el usuario ya está autenticado
+    const savedUser = localStorage.getItem('auth_user');
+    if (savedUser) {
+      setUsername(savedUser);
+      setShowAuth(false);
     }
   }, []);
 
-  const handleUsernameSubmit = (newUsername: string) => {
-    setUsername(newUsername);
-    localStorage.setItem("gemini_chat_username", newUsername);
+  const handleAuthSuccess = (user: string) => {
+    setUsername(user);
+    setShowAuth(false);
   };
 
   const handleClearUsername = () => {
-    setUsername(null);
-    localStorage.removeItem("gemini_chat_username");
+    setUsername("");
+    setShowAuth(true);
   };
 
-  return (
-    <div className="min-h-screen">
-      <UsernameModal
-        isOpen={!username}
-        onSubmit={handleUsernameSubmit}
-      />
-      
-      {username && (
-        <ChatInterface
-          username={username}
-          onClearUsername={handleClearUsername}
+  if (showAuth) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <AuthModal
+          isOpen={showAuth}
+          onAuthSuccess={handleAuthSuccess}
         />
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <ChatInterface
+      username={username}
+      onClearUsername={handleClearUsername}
+    />
   );
 }

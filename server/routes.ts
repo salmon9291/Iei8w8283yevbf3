@@ -7,6 +7,51 @@ import { z } from "zod";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCmlpC0g1UrSunQeoGUklSRf2o1LD5xlGo";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ message: "Usuario y contraseña son requeridos" });
+      }
+
+      // Verificar si el usuario ya existe
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "El usuario ya existe" });
+      }
+
+      // Crear nuevo usuario
+      const user = await storage.createUser({ username, password });
+      res.json({ message: "Usuario creado exitosamente", user: { id: user.id, username: user.username } });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Error al crear usuario" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ message: "Usuario y contraseña son requeridos" });
+      }
+
+      // Verificar credenciales
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      res.json({ message: "Inicio de sesión exitoso", user: { id: user.id, username: user.username } });
+    } catch (error) {
+      console.error("Error logging in:", error);
+      res.status(500).json({ message: "Error al iniciar sesión" });
+    }
+  });
+
   // Get messages for a user
   app.get("/api/messages/:username", async (req, res) => {
     try {

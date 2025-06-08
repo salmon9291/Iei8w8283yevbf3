@@ -7,6 +7,7 @@ import { useChat } from "@/hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
 import { VoiceControls } from "./voice-controls";
+import { ThemeToggle } from "./theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatInterfaceProps {
@@ -20,7 +21,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   const [messageText, setMessageText] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [lastAiMessage, setLastAiMessage] = useState<string>("");
-  const [aiPrompt, setAiPrompt] = useState("Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.");
+  const [aiPrompt, setAiPrompt] = useState(`Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`);
   const [tempPrompt, setTempPrompt] = useState(aiPrompt);
   const [savedChats, setSavedChats] = useState<any[]>([]);
   const [currentChatName, setCurrentChatName] = useState("");
@@ -37,6 +38,13 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     isClearing,
     error,
   } = useChat(username, aiPrompt);
+
+  // Actualizar prompt cuando cambie el username
+  useEffect(() => {
+    const newPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
+    setAiPrompt(newPrompt);
+    setTempPrompt(newPrompt);
+  }, [username]);
 
   // Track last AI message for voice controls
   useEffect(() => {
@@ -101,6 +109,13 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     });
   };
 
+  const handleLogout = () => {
+    if (window.confirm("¿Estás seguro de que quieres cerrar sesión?")) {
+      localStorage.removeItem('auth_user');
+      onClearUsername();
+    }
+  };
+
   const saveCurrentChat = () => {
     if (!currentChatName.trim()) {
       toast({
@@ -147,7 +162,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   };
 
   const loadChat = (chatData: any) => {
-    // Esta función necesitaría ser implementada en el hook useChat
     toast({
       title: "Función no implementada",
       description: "La carga de chats se implementará en una actualización futura",
@@ -184,11 +198,52 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   }, []);
 
   const tabs = [
-    { id: 'chat' as TabType, label: 'Chat', icon: '💬' },
-    { id: 'voice' as TabType, label: 'Voz', icon: '🎤' },
-    { id: 'ai-battle' as TabType, label: 'Debate', icon: '🗣️' },
-    { id: 'accounts' as TabType, label: 'Chats', icon: '💾' },
-    { id: 'settings' as TabType, label: 'Configuración', icon: '⚙️' },
+    { 
+      id: 'chat' as TabType, 
+      label: 'Chat', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'voice' as TabType, 
+      label: 'Voz', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'ai-battle' as TabType, 
+      label: 'Debate', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'accounts' as TabType, 
+      label: 'Chats', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+        </svg>
+      )
+    },
+    { 
+      id: 'settings' as TabType, 
+      label: 'Configuración', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      )
+    },
   ];
 
   const renderTabContent = () => {
@@ -218,7 +273,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
             </div>
 
             {/* Message Input */}
-            <div className="bg-white border-t border-gray-100 px-3 md:px-6 py-3 md:py-4">
+            <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-3 md:px-6 py-3 md:py-4">
               <form onSubmit={handleSendMessage} className="flex items-center space-x-2 md:space-x-3">
                 <div className="flex-1 relative">
                   <Input
@@ -227,7 +282,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Escribe tu mensaje..."
-                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50 dark:bg-gray-700"
                     maxLength={1000}
                     disabled={isSending}
                   />
@@ -236,7 +291,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                 <Button
                   type="submit"
                   disabled={!messageText.trim() || isSending}
-                  className="bg-gray-800 hover:bg-gray-900 text-white p-2 md:p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white p-2 md:p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSending ? (
                     <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-white"></div>
@@ -269,11 +324,11 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
         return (
           <div className="flex-1 p-3 md:p-6 space-y-4 md:space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">💾 Gestión de Chats</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Gestión de Chats</h3>
               
               {/* Guardar chat actual */}
-              <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-800">Guardar Chat Actual</h4>
+              <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200">Guardar Chat Actual</h4>
                 <div className="flex space-x-2">
                   <Input
                     value={currentChatName}
@@ -288,7 +343,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                     Guardar
                   </Button>
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   Mensajes actuales: {messages.length}
                 </p>
               </div>
@@ -297,13 +352,13 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
             {/* Lista de chats guardados */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-800">Chats Guardados ({savedChats.length})</h4>
+                <h4 className="font-medium text-gray-800 dark:text-gray-200">Chats Guardados ({savedChats.length})</h4>
                 {savedChats.length > 0 && (
                   <Button
                     onClick={deleteAllChats}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 text-xs"
                   >
                     Eliminar Todos
                   </Button>
@@ -311,7 +366,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
               </div>
 
               {savedChats.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <p className="text-sm">No tienes chats guardados</p>
                 </div>
               ) : (
@@ -319,16 +374,16 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                   {savedChats.map((chat) => (
                     <div
                       key={chat.id}
-                      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                     >
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-gray-900 truncate text-sm">
+                        <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">
                           {chat.name}
                         </h5>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {chat.messages.length} mensajes • {new Date(chat.createdAt).toLocaleDateString()}
                         </p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                           Usuario: {chat.username}
                         </p>
                       </div>
@@ -345,7 +400,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                           onClick={() => deleteChat(chat.id)}
                           size="sm"
                           variant="outline"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-2 py-1"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 text-xs px-2 py-1"
                         >
                           ✕
                         </Button>
@@ -362,38 +417,38 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
         return (
           <div className="flex-1 p-6 space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Configuración del Prompt de IA</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Configuración del Prompt de IA</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Prompt personalizado:
                   </label>
                   <Textarea
                     value={tempPrompt}
                     onChange={(e) => setTempPrompt(e.target.value)}
                     placeholder="Escribe aquí cómo quieres que se comporte la IA..."
-                    className="w-full h-32 px-3 py-2 border border-gray-200 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+                    className="w-full h-32 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
                   />
                 </div>
                 <Button
                   onClick={handleSavePrompt}
-                  className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg"
+                  className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
                 >
                   Guardar Configuración
                 </Button>
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Información de Usuario</h3>
+            <div className="border-t dark:border-gray-700 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Información de Usuario</h3>
               <div className="space-y-2">
-                <p className="text-sm text-gray-600"><strong>Usuario:</strong> {username}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400"><strong>Usuario:</strong> {username}</p>
                 <Button
-                  onClick={onClearUsername}
+                  onClick={handleLogout}
                   variant="outline"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900"
                 >
-                  Cambiar Usuario
+                  Cerrar Sesión
                 </Button>
               </div>
             </div>
@@ -406,31 +461,34 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 flex flex-col">
         {/* Header with Tabs */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="px-3 md:px-6 py-3 border-b border-gray-100">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+          <div className="px-3 md:px-6 py-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 md:space-x-3">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-800 dark:bg-gray-600 rounded-full flex items-center justify-center">
                   <div className="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full"></div>
                 </div>
-                <span className="text-xs md:text-sm font-medium text-gray-700 truncate max-w-32 md:max-w-none">{username}</span>
+                <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-32 md:max-w-none">{username}</span>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearChat}
-                disabled={isClearing}
-                className="p-1 md:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                title="Limpiar chat"
-              >
-                <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                </svg>
-              </Button>
+              <div className="flex items-center space-x-2">
+                <ThemeToggle />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearChat}
+                  disabled={isClearing}
+                  className="p-1 md:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  title="Limpiar chat"
+                >
+                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -442,11 +500,11 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-gray-50 text-gray-900 border-b-2 border-gray-800'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-b-2 border-gray-800 dark:border-gray-600'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                <span className="text-sm md:text-base">{tab.icon}</span>
+                {tab.icon}
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
@@ -482,7 +540,7 @@ function AIBattleTab({ username }: { username: string }) {
       
       // IA 1 (Optimista)
       const ai1Response = await sendBattleMessage(
-        `Eres una IA optimista y entusiasta. Responde sobre: ${currentTopic}`,
+        `Eres una IA optimista y entusiasta que se dirige al usuario como ${username}. Responde sobre: ${currentTopic}`,
         `ai1`,
         username
       );
@@ -499,7 +557,7 @@ function AIBattleTab({ username }: { username: string }) {
       
       // IA 2 (Escéptica)
       const ai2Response = await sendBattleMessage(
-        `Eres una IA escéptica y analítica. Responde críticando o cuestionando: ${ai1Response}`,
+        `Eres una IA escéptica y analítica que se dirige al usuario como ${username}. Responde críticando o cuestionando: ${ai1Response}`,
         `ai2`,
         username
       );
@@ -539,9 +597,9 @@ function AIBattleTab({ username }: { username: string }) {
   return (
     <div className="flex-1 flex flex-col p-3 md:p-6">
       <div className="mb-4 md:mb-6">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">🗣️ Debate entre IAs</h2>
-        <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4">
-          Dos IAs con personalidades diferentes debatirán sobre el tema que elijas.
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Debate entre IAs</h2>
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-3 md:mb-4">
+          Dos IAs con personalidades diferentes debatirán sobre el tema que elijas, {username}.
         </p>
         
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 mb-4">
@@ -563,7 +621,7 @@ function AIBattleTab({ username }: { username: string }) {
         
         {isRunning && (
           <div className="text-center py-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               Ronda {roundCount} de {maxRounds} • Las IAs están debatiendo...
             </span>
           </div>
@@ -579,8 +637,8 @@ function AIBattleTab({ username }: { username: string }) {
             <div
               className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                 message.sender === 'ai1'
-                  ? 'bg-blue-100 text-blue-900'
-                  : 'bg-red-100 text-red-900'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                  : 'bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100'
               }`}
             >
               <div className="text-xs font-medium mb-1">

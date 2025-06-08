@@ -60,7 +60,7 @@ export class MemStorage implements IStorage {
     const messagesToDelete = Array.from(this.messages.entries())
       .filter(([_, message]) => message.username === username)
       .map(([id, _]) => id);
-    
+
     messagesToDelete.forEach(id => this.messages.delete(id));
   }
 }
