@@ -6,6 +6,45 @@ import { z } from "zod";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCmlpC0g1UrSunQeoGUklSRf2o1LD5xlGo";
 
+// Función para extraer contenido de URLs
+async function extractContentFromUrl(url: string): Promise<string> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    if (!response.ok) {
+      return `No se pudo acceder al enlace: ${url}`;
+    }
+    
+    const html = await response.text();
+    
+    // Extraer texto del HTML de manera simple
+    const textContent = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remover scripts
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remover estilos
+      .replace(/<[^>]+>/g, ' ') // Remover todas las etiquetas HTML
+      .replace(/\s+/g, ' ') // Normalizar espacios
+      .trim();
+    
+    // Limitar el contenido a 2000 caracteres para no sobrecargar la IA
+    return textContent.length > 2000 
+      ? textContent.substring(0, 2000) + '...' 
+      : textContent;
+      
+  } catch (error) {
+    return `Error al leer el enlace: ${url}`;
+  }
+}
+
+// Función para detectar URLs en el texto
+function extractUrls(text: string): string[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.match(urlRegex) || [];
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
@@ -85,6 +124,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const customPrompt = req.body.customPrompt || "Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.";
 
+        // Detectar y procesar URLs en el mensaje
+        const urls = extractUrls(validatedData.content);
+        let enhancedContent = validatedData.content;
+        
+        if (urls.length > 0) {
+          console.log(`Procesando ${urls.length} enlace(s) encontrado(s)`);
+          
+          for (const url of urls) {
+            const urlContent = await extractContentFromUrl(url);
+            enhancedContent += `\n\nContenido del enlace ${url}:\n${urlContent}`;
+          }
+        }
+
         const geminiResponse = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
           {
@@ -95,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: `${customPrompt} Responde a la siguiente pregunta o comentario: ${validatedData.content}`
+                  text: `${customPrompt} ${urls.length > 0 ? 'El usuario ha compartido uno o más enlaces. Analiza el contenido proporcionado y responde de manera útil.' : ''} Responde a la siguiente pregunta o comentario: ${enhancedContent}`
                 }]
               }]
             })

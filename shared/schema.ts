@@ -31,3 +31,19 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+
+// Added Zod schemas for users and messages with string dates
+export const userSchema = z.object({
+  id: z.number(),
+  username: z.string().min(1),
+  password: z.string().min(1),
+  createdAt: z.string(),
+});
+
+export const messageSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  sender: z.enum(["user", "ai"]),
+  username: z.string(),
+  createdAt: z.string(),
+});
