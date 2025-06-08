@@ -26,12 +26,17 @@ export function useChat(username: string | null, customPrompt?: string) {
         data.aiMessage,
       ]);
       setIsTyping(false);
-      
+
       // Return the AI message for auto-speaking
       return data.aiMessage;
     },
-    onError: () => {
+    onError: (error) => {
       setIsTyping(false);
+      // Log the error
+      console.error("Error sending message:", error);
+      // Optionally, update the state to show an error message to the user.
+      // For example, you could set an error state and display it in the UI.
+      // Example: setError("Failed to send message. Please try again.");
     },
   });
 

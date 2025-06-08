@@ -16,18 +16,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Usuario y contraseña son requeridos" });
       }
 
+      if (username.trim().length < 3) {
+        return res.status(400).json({ message: "El usuario debe tener al menos 3 caracteres" });
+      }
+
+      if (password.length < 4) {
+        return res.status(400).json({ message: "La contraseña debe tener al menos 4 caracteres" });
+      }
+
       // Verificar si el usuario ya existe
-      const existingUser = await storage.getUserByUsername(username);
+      const existingUser = await storage.getUserByUsername(username.trim());
       if (existingUser) {
         return res.status(400).json({ message: "El usuario ya existe" });
       }
 
       // Crear nuevo usuario
-      const user = await storage.createUser({ username, password });
+      const user = await storage.createUser({ username: username.trim(), password });
       res.json({ message: "Usuario creado exitosamente", user: { id: user.id, username: user.username } });
     } catch (error) {
       console.error("Error creating user:", error);
-      res.status(500).json({ message: "Error al crear usuario" });
+      res.status(500).json({ message: "Error interno del servidor. Inténtalo más tarde." });
     }
   });
 
@@ -40,15 +48,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verificar credenciales
-      const user = await storage.getUserByUsername(username);
+      const user = await storage.getUserByUsername(username.trim());
       if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Credenciales inválidas" });
+        return res.status(401).json({ message: "Usuario o contraseña incorrectos" });
       }
 
       res.json({ message: "Inicio de sesión exitoso", user: { id: user.id, username: user.username } });
     } catch (error) {
       console.error("Error logging in:", error);
-      res.status(500).json({ message: "Error al iniciar sesión" });
+      res.status(500).json({ message: "Error interno del servidor. Inténtalo más tarde." });
     }
   });
 

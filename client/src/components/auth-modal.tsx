@@ -42,26 +42,23 @@ export function AuthModal({ isOpen, onAuthSuccess }: AuthModalProps) {
         body: JSON.stringify({ username: username.trim(), password }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('auth_user', username.trim());
-        onAuthSuccess(username.trim());
-        toast({
-          title: "Éxito",
-          description: isLogin ? "Sesión iniciada correctamente" : "Cuenta creada correctamente",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: data.message || "Error en la autenticación",
-          variant: "destructive",
-        });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ message: 'Error de conexión con el servidor' }));
+        throw new Error(data.message || `Error del servidor: ${response.status}`);
       }
-    } catch (error) {
+
+      const data = await response.json();
+      localStorage.setItem('auth_user', username.trim());
+      onAuthSuccess(username.trim());
       toast({
-        title: "Error",
-        description: "Error de conexión",
+        title: "Éxito",
+        description: isLogin ? "Sesión iniciada correctamente" : "Cuenta creada correctamente",
+      });
+    } catch (error) {
+      console.error('Error de autenticación:', error);
+      toast({
+        title: "Error de Conexión",
+        description: error instanceof Error ? error.message : "No se puede conectar al servidor. Verifica tu conexión a internet.",
         variant: "destructive",
       });
     } finally {
