@@ -1,7 +1,10 @@
 import type { Message } from "@shared/schema";
+import { Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MessageBubbleProps {
   message: Message;
+  onSpeak?: () => void;
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
