@@ -175,32 +175,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleVoice}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              title={voiceEnabled ? "Desactivar voz" : "Activar voz"}
-            >
-              {voiceEnabled ? (
-                <Volume2 className="w-4 h-4" />
-              ) : (
-                <VolumeX className="w-4 h-4" />
-              )}
-            </Button>
-            
-            {isSpeaking && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={stopSpeaking}
-                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                title="Detener voz"
-              >
-                <div className="w-4 h-4 border-2 border-current"></div>
-              </Button>
-            )}
-            
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={handleClearChat}
               disabled={isClearing}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -239,6 +213,73 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
         )}
       </div>
 
+      {/* Voice Controls Section */}
+      <div className="bg-gray-50 border-t border-gray-100 px-6 py-3">
+        <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleVoice}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+              title={voiceEnabled ? "Desactivar voz" : "Activar voz"}
+            >
+              {voiceEnabled ? (
+                <Volume2 className="w-4 h-4" />
+              ) : (
+                <VolumeX className="w-4 h-4" />
+              )}
+            </Button>
+            <span className="text-xs text-gray-600">
+              {voiceEnabled ? "Voz activada" : "Voz desactivada"}
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-gray-300"></div>
+
+          <div className="flex items-center space-x-2">
+            <Button
+              type="button"
+              onClick={isListening ? stopListening : startListening}
+              disabled={isSending || !recognitionRef.current}
+              className={`p-3 rounded-full transition-all ${
+                isListening 
+                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg scale-110' 
+                  : 'bg-gray-800 hover:bg-gray-900 text-white shadow-md hover:shadow-lg'
+              }`}
+              title={isListening ? "Detener grabación" : "Mantén presionado para hablar"}
+            >
+              {isListening ? (
+                <MicOff className="w-5 h-5" />
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
+            </Button>
+            <span className="text-xs text-gray-600">
+              {isListening ? "Escuchando..." : "Toca para hablar"}
+            </span>
+          </div>
+
+          {isSpeaking && (
+            <>
+              <div className="h-4 w-px bg-gray-300"></div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={stopSpeaking}
+                  className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                  title="Detener voz"
+                >
+                  <div className="w-4 h-4 border-2 border-current rounded-sm"></div>
+                </Button>
+                <span className="text-xs text-red-600">Hablando...</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Message Input */}
       <div className="bg-white border-t border-gray-100 px-6 py-4">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
@@ -254,24 +295,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
               disabled={isSending}
             />
           </div>
-          
-          <Button
-            type="button"
-            onClick={isListening ? stopListening : startListening}
-            disabled={isSending || !recognitionRef.current}
-            className={`p-3 rounded-lg ${
-              isListening 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-            }`}
-            title={isListening ? "Detener grabación" : "Hablar"}
-          >
-            {isListening ? (
-              <MicOff className="w-4 h-4" />
-            ) : (
-              <Mic className="w-4 h-4" />
-            )}
-          </Button>
           
           <Button
             type="submit"
