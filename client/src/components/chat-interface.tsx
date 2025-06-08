@@ -32,6 +32,19 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     error,
   } = useChat(username);
 
+  // Auto-speak AI responses when voice is enabled
+  useEffect(() => {
+    if (messages.length > 0 && voiceEnabled) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.sender === 'ai') {
+        // Small delay to ensure message is rendered
+        setTimeout(() => {
+          speakMessage(lastMessage.content);
+        }, 500);
+      }
+    }
+  }, [messages, voiceEnabled]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
@@ -118,9 +131,9 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   };
 
   const speakMessage = (text: string) => {
-    if (!voiceEnabled) return;
+    if (!voiceEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new window.SpeechSynthesisUtterance(text);
     utterance.lang = 'es-ES';
     utterance.rate = 0.9;
     utterance.pitch = 1;
@@ -129,11 +142,13 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
     
-    speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(utterance);
   };
 
   const stopSpeaking = () => {
-    speechSynthesis.cancel();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     setIsSpeaking(false);
   };
 

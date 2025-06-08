@@ -26,6 +26,9 @@ export function useChat(username: string | null) {
         data.aiMessage,
       ]);
       setIsTyping(false);
+      
+      // Return the AI message for auto-speaking
+      return data.aiMessage;
     },
     onError: () => {
       setIsTyping(false);
