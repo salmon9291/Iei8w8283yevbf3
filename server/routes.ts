@@ -30,6 +30,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get AI response from Gemini
       let aiResponse = "";
       try {
+        const customPrompt = req.body.customPrompt || "Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.";
+        
         const geminiResponse = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
           {
@@ -40,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: `Eres un asistente de IA que SIEMPRE responde en español. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida. Responde a la siguiente pregunta o comentario: ${validatedData.content}`
+                  text: `${customPrompt} Responde a la siguiente pregunta o comentario: ${validatedData.content}`
                 }]
               }]
             })
@@ -85,6 +87,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error clearing messages:", error);
       res.status(500).json({ message: "Failed to clear chat history" });
+    }
+  });
+
+  // Battle message endpoint
+  app.post("/api/battle-message", async (req, res) => {
+    try {
+      const { prompt, aiId, username } = req.body;
+      
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }]
+          })
+        }
+      );
+
+      if (!geminiResponse.ok) {
+        throw new Error(`Gemini API error: ${geminiResponse.status}`);
+      }
+
+      const geminiData = await geminiResponse.json();
+      const response = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "No pude generar una respuesta.";
+
+      res.json({ response });
+    } catch (error) {
+      console.error("Battle message error:", error);
+      res.status(500).json({ message: "Error en la batalla de IAs" });
     }
   });
 

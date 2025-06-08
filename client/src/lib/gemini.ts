@@ -6,11 +6,12 @@ export interface SendMessageResponse {
   aiMessage: Message;
 }
 
-export async function sendMessage(content: string, username: string): Promise<SendMessageResponse> {
+export async function sendMessage(content: string, username: string, customPrompt?: string): Promise<SendMessageResponse> {
   const response = await apiRequest("POST", "/api/messages", {
     content,
     sender: "user",
     username,
+    customPrompt,
   });
   
   return response.json();

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sendMessage, getMessages, clearMessages } from "@/lib/gemini";
 import type { Message } from "@shared/schema";
 
-export function useChat(username: string | null) {
+export function useChat(username: string | null, customPrompt?: string) {
   const [isTyping, setIsTyping] = useState(false);
   const queryClient = useQueryClient();
 
@@ -14,7 +14,7 @@ export function useChat(username: string | null) {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: ({ content }: { content: string }) => sendMessage(content, username!),
+    mutationFn: ({ content }: { content: string }) => sendMessage(content, username!, customPrompt),
     onMutate: () => {
       setIsTyping(true);
     },
