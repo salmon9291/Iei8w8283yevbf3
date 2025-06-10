@@ -15,11 +15,11 @@ interface ChatInterfaceProps {
   onClearUsername: () => void;
 }
 
-type TabType = 'chat' | 'voice' | 'ai-battle' | 'settings' | 'accounts';
+type TabType = 'ai-battle' | 'settings' | 'accounts';
 
 export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
-  const [activeTab, setActiveTab] = useState<TabType>('chat');
+  const [activeTab, setActiveTab] = useState<TabType>('ai-battle');
   const [lastAiMessage, setLastAiMessage] = useState<string>("");
   const [aiPrompt, setAiPrompt] = useState(`Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`);
   const [tempPrompt, setTempPrompt] = useState(aiPrompt);
@@ -199,24 +199,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
   const tabs = [
     { 
-      id: 'chat' as TabType, 
-      label: 'Chat', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      )
-    },
-    { 
-      id: 'voice' as TabType, 
-      label: 'Voz', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-        </svg>
-      )
-    },
-    { 
       id: 'ai-battle' as TabType, 
       label: 'Debate', 
       icon: (
@@ -248,75 +230,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'chat':
-        return (
-          <div className="flex-1 flex flex-col">
-            {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-              {isLoading ? (
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
-                </div>
-              ) : (
-                <>
-                  {messages.map((message) => (
-                    <MessageBubble 
-                      key={message.id} 
-                      message={message} 
-                    />
-                  ))}
-
-                  {isTyping && <TypingIndicator />}
-                  <div ref={messagesEndRef} />
-                </>
-              )}
-            </div>
-
-            {/* Message Input */}
-            <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-3 md:px-6 py-3 md:py-4">
-              <form onSubmit={handleSendMessage} className="flex items-center space-x-2 md:space-x-3">
-                <div className="flex-1 relative">
-                  <Input
-                    type="text"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Escribe tu mensaje..."
-                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400 bg-gray-50 dark:bg-gray-700"
-                    maxLength={1000}
-                    disabled={isSending}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={!messageText.trim() || isSending}
-                  className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white p-2 md:p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSending ? (
-                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-white"></div>
-                  ) : (
-                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                    </svg>
-                  )}
-                </Button>
-              </form>
-            </div>
-          </div>
-        );
-
-      case 'voice':
-        return (
-          <div className="flex-1 p-6">
-            <VoiceControls
-              onTranscriptReceived={handleVoiceTranscript}
-              isProcessing={isSending}
-              lastAiMessage={lastAiMessage}
-            />
-          </div>
-        );
-
       case 'ai-battle':
         return <AIBattleTab username={username} />;
 
@@ -542,7 +455,41 @@ function AIBattleTab({ username }: { username: string }) {
   const [battleMessages, setBattleMessages] = useState<any[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [roundCount, setRoundCount] = useState(0);
-  const maxRounds = 6;
+  const [numDebaters, setNumDebaters] = useState(2);
+  const [maxRounds, setMaxRounds] = useState(6);
+  const [debaters, setDebaters] = useState([
+    { id: 1, name: "IA Optimista", personality: "optimista y entusiasta", color: "blue" },
+    { id: 2, name: "IA Escéptica", personality: "escéptica y analítica", color: "red" }
+  ]);
+
+  const colors = ["blue", "red", "green", "purple", "orange", "pink", "indigo", "yellow"];
+
+  const addDebater = () => {
+    if (debaters.length < 8) {
+      const newId = debaters.length + 1;
+      const newDebater = {
+        id: newId,
+        name: `IA Debatiente ${newId}`,
+        personality: "neutral y equilibrada",
+        color: colors[debaters.length % colors.length]
+      };
+      setDebaters([...debaters, newDebater]);
+      setNumDebaters(debaters.length + 1);
+    }
+  };
+
+  const removeDebater = (id: number) => {
+    if (debaters.length > 2) {
+      setDebaters(debaters.filter(d => d.id !== id));
+      setNumDebaters(debaters.length - 1);
+    }
+  };
+
+  const updateDebater = (id: number, field: string, value: string) => {
+    setDebaters(debaters.map(d => 
+      d.id === id ? { ...d, [field]: value } : d
+    ));
+  };
 
   const startBattle = async () => {
     if (!topic.trim()) return;
@@ -556,38 +503,28 @@ function AIBattleTab({ username }: { username: string }) {
     for (let round = 0; round < maxRounds; round++) {
       setRoundCount(round + 1);
       
-      // IA 1 (Optimista)
-      const ai1Prompt = round === 0 
-        ? `Eres una IA optimista y entusiasta llamada "Optimista". Estás en un debate con otra IA llamada "Escéptica". Responde de manera positiva y entusiasta sobre el tema: ${currentTopic}. NO te dirijas al usuario, habla directamente como si fueras un participante del debate.`
-        : `Eres una IA optimista y entusiasta llamada "Optimista". Estás debatiendo con "Escéptica". Responde de manera positiva y entusiasta a este argumento: "${currentTopic}". Contraargumenta de forma constructiva y optimista. NO menciones al usuario.`;
-      
-      const ai1Response = await sendBattleMessage(ai1Prompt, `ai1`, username);
-      
-      setBattleMessages(prev => [...prev, {
-        id: Date.now() + Math.random(),
-        content: ai1Response,
-        sender: 'ai1',
-        aiName: 'IA Optimista',
-        round: round + 1
-      }]);
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // IA 2 (Escéptica)
-      const ai2Prompt = `Eres una IA escéptica y analítica llamada "Escéptica". Estás debatiendo con "Optimista". Responde de manera crítica y analítica a este argumento: "${ai1Response}". Cuestiona los puntos débiles y presenta contraargumentos razonados. NO menciones al usuario.`;
-      
-      const ai2Response = await sendBattleMessage(ai2Prompt, `ai2`, username);
-      
-      setBattleMessages(prev => [...prev, {
-        id: Date.now() + Math.random(),
-        content: ai2Response,
-        sender: 'ai2',
-        aiName: 'IA Escéptica',
-        round: round + 1
-      }]);
-      
-      currentTopic = ai2Response;
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      for (let i = 0; i < debaters.length; i++) {
+        const debater = debaters[i];
+        const otherDebaters = debaters.filter(d => d.id !== debater.id).map(d => d.name).join(", ");
+        
+        const prompt = round === 0 && i === 0
+          ? `Eres una IA ${debater.personality} llamada "${debater.name}". Estás en un debate con ${otherDebaters}. Responde de manera ${debater.personality} sobre el tema: ${currentTopic}. NO te dirijas al usuario, habla directamente como si fueras un participante del debate. Mantén tu respuesta concisa (máximo 150 palabras).`
+          : `Eres una IA ${debater.personality} llamada "${debater.name}". Estás debatiendo con ${otherDebaters}. Responde de manera ${debater.personality} a este argumento: "${currentTopic}". Contraargumenta de forma constructiva manteniendo tu personalidad. NO menciones al usuario. Mantén tu respuesta concisa (máximo 150 palabras).`;
+        
+        const response = await sendBattleMessage(prompt, `ai${debater.id}`, username);
+        
+        setBattleMessages(prev => [...prev, {
+          id: Date.now() + Math.random(),
+          content: response,
+          sender: `ai${debater.id}`,
+          aiName: debater.name,
+          color: debater.color,
+          round: round + 1
+        }]);
+        
+        currentTopic = response;
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
     
     setIsRunning(false);
@@ -610,54 +547,155 @@ function AIBattleTab({ username }: { username: string }) {
     }
   };
 
+  const getColorClasses = (color: string) => {
+    const colorMap: Record<string, string> = {
+      blue: 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 border-blue-200 dark:border-blue-800',
+      red: 'bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800',
+      green: 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800',
+      purple: 'bg-purple-50 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100 border-purple-200 dark:border-purple-800',
+      orange: 'bg-orange-50 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-200 dark:border-orange-800',
+      pink: 'bg-pink-50 dark:bg-pink-900/30 text-pink-900 dark:text-pink-100 border-pink-200 dark:border-pink-800',
+      indigo: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 border-indigo-200 dark:border-indigo-800',
+      yellow: 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-200 dark:border-yellow-800'
+    };
+    return colorMap[color] || colorMap.blue;
+  };
+
+  const getDotColor = (color: string) => {
+    const colorMap: Record<string, string> = {
+      blue: 'bg-blue-500',
+      red: 'bg-red-500',
+      green: 'bg-green-500',
+      purple: 'bg-purple-500',
+      orange: 'bg-orange-500',
+      pink: 'bg-pink-500',
+      indigo: 'bg-indigo-500',
+      yellow: 'bg-yellow-500'
+    };
+    return colorMap[color] || colorMap.blue;
+  };
+
   return (
     <div className="flex-1 flex flex-col p-3 md:p-6">
       <div className="mb-4 md:mb-6">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Debate de IAs</h2>
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Debate de IAs Múltiples</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Observa cómo dos IAs con personalidades opuestas debaten sobre cualquier tema.
+          Configura múltiples IAs con diferentes personalidades para debatir sobre cualquier tema.
         </p>
         
+        {/* Configuración de debatientes */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
-          <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
-            <Input
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Tema para el debate (ej: inteligencia artificial, educación, medio ambiente...)"
-              className="flex-1 text-sm"
-              disabled={isRunning}
-            />
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">Debatientes ({debaters.length})</h3>
             <Button
-              onClick={startBattle}
-              disabled={!topic.trim() || isRunning}
-              className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200 w-full md:w-auto"
+              onClick={addDebater}
+              disabled={debaters.length >= 8 || isRunning}
+              size="sm"
+              className="text-xs"
             >
-              {isRunning ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Debatiendo...</span>
-                </div>
-              ) : (
-                'Iniciar Debate'
-              )}
+              Agregar Debatiente
             </Button>
           </div>
           
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {debaters.map((debater, index) => (
+              <div key={debater.id} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className={`w-3 h-3 rounded-full ${getDotColor(debater.color)}`}></div>
+                <Input
+                  value={debater.name}
+                  onChange={(e) => updateDebater(debater.id, 'name', e.target.value)}
+                  className="flex-1 text-xs h-8"
+                  placeholder="Nombre del debatiente"
+                  disabled={isRunning}
+                />
+                <Input
+                  value={debater.personality}
+                  onChange={(e) => updateDebater(debater.id, 'personality', e.target.value)}
+                  className="flex-1 text-xs h-8"
+                  placeholder="Personalidad"
+                  disabled={isRunning}
+                />
+                {debaters.length > 2 && (
+                  <Button
+                    onClick={() => removeDebater(debater.id)}
+                    disabled={isRunning}
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 text-xs p-1 w-8 h-8"
+                  >
+                    ✕
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Configuración del debate */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Tema del debate
+              </label>
+              <Input
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="Tema para el debate..."
+                className="text-sm"
+                disabled={isRunning}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Máximo de rondas
+              </label>
+              <Input
+                type="number"
+                value={maxRounds}
+                onChange={(e) => setMaxRounds(Math.max(1, Math.min(10, parseInt(e.target.value) || 6)))}
+                min={1}
+                max={10}
+                className="text-sm"
+                disabled={isRunning}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                onClick={startBattle}
+                disabled={!topic.trim() || isRunning}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200"
+              >
+                {isRunning ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Debatiendo...</span>
+                  </div>
+                ) : (
+                  'Iniciar Debate'
+                )}
+              </Button>
+            </div>
+          </div>
+          
           {isRunning && (
-            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center justify-between text-sm">
+            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-gray-600 dark:text-gray-400">
                   Ronda {roundCount} de {maxRounds}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="flex space-x-1">
+                    {debaters.map((debater, i) => (
+                      <div key={debater.id} className={`w-2 h-2 rounded-full ${getDotColor(debater.color)} animate-pulse`}></div>
+                    ))}
+                  </div>
                   <span className="text-gray-600 dark:text-gray-400">Debate en progreso</span>
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 </div>
               </div>
-              <div className="mt-2 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-blue-500 to-red-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(roundCount / maxRounds) * 100}%` }}
                 ></div>
               </div>
@@ -675,27 +713,21 @@ function AIBattleTab({ username }: { username: string }) {
               </svg>
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Introduce un tema arriba para comenzar el debate
+              Configura los debatientes y el tema arriba para comenzar el debate
             </p>
           </div>
         )}
         
-        {battleMessages.map((message) => (
+        {battleMessages.map((message, index) => (
           <div
             key={message.id}
-            className={`flex ${message.sender === 'ai1' ? 'justify-start' : 'justify-end'} animate-fadeIn`}
+            className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'} animate-fadeIn`}
           >
             <div
-              className={`max-w-[90%] md:max-w-[70%] px-4 py-3 rounded-2xl shadow-sm border ${
-                message.sender === 'ai1'
-                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 border-blue-200 dark:border-blue-800'
-                  : 'bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800'
-              }`}
+              className={`max-w-[90%] md:max-w-[70%] px-4 py-3 rounded-2xl shadow-sm border ${getColorClasses(message.color)}`}
             >
               <div className="flex items-center space-x-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  message.sender === 'ai1' ? 'bg-blue-500' : 'bg-red-500'
-                }`}></div>
+                <div className={`w-2 h-2 rounded-full ${getDotColor(message.color)}`}></div>
                 <span className="text-xs font-semibold opacity-75">
                   {message.aiName}
                 </span>
