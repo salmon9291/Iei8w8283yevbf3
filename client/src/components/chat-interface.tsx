@@ -15,11 +15,11 @@ interface ChatInterfaceProps {
   onClearUsername: () => void;
 }
 
-type TabType = 'ai-battle' | 'settings' | 'accounts';
+type TabType = 'chat' | 'ai-battle' | 'settings' | 'accounts';
 
 export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
-  const [activeTab, setActiveTab] = useState<TabType>('ai-battle');
+  const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [lastAiMessage, setLastAiMessage] = useState<string>("");
   const [aiPrompt, setAiPrompt] = useState(`Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`);
   const [tempPrompt, setTempPrompt] = useState(aiPrompt);
@@ -126,10 +126,25 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
       return;
     }
 
-    if (messages.length === 0) {
+    let chatMessages = [];
+    let chatType = activeTab;
+
+    if (activeTab === 'chat') {
+      if (messages.length === 0) {
+        toast({
+          title: "Error",
+          description: "No hay mensajes para guardar",
+          variant: "destructive",
+        });
+        return;
+      }
+      chatMessages = messages;
+    } else if (activeTab === 'ai-battle') {
+      // Para obtener los mensajes del debate, necesitamos acceder al componente AIBattleTab
+      // Por ahora, mostraremos un mensaje indicando que esta función se implementará
       toast({
-        title: "Error",
-        description: "No hay mensajes para guardar",
+        title: "Función en desarrollo",
+        description: "El guardado de debates se implementará pronto",
         variant: "destructive",
       });
       return;
@@ -138,10 +153,11 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     const chatData = {
       id: Date.now(),
       name: currentChatName.trim(),
-      messages: messages,
+      messages: chatMessages,
       username: username,
       createdAt: new Date().toISOString(),
-      prompt: aiPrompt
+      prompt: aiPrompt,
+      type: chatType
     };
 
     const existingSaved = JSON.parse(localStorage.getItem('savedChats') || '[]');
@@ -162,11 +178,33 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
   };
 
   const loadChat = (chatData: any) => {
-    toast({
-      title: "Función no implementada",
-      description: "La carga de chats se implementará en una actualización futura",
-      variant: "destructive",
-    });
+    if (chatData.type === 'chat') {
+      // Limpiar mensajes actuales
+      clearMessages();
+      
+      // Simular la carga de mensajes (en una implementación real, esto se haría a través de la API)
+      setTimeout(() => {
+        // Cambiar a la pestaña de chat
+        setActiveTab('chat');
+        
+        // Actualizar el prompt si existe
+        if (chatData.prompt) {
+          setAiPrompt(chatData.prompt);
+          setTempPrompt(chatData.prompt);
+        }
+        
+        toast({
+          title: "Chat cargado",
+          description: `Chat "${chatData.name}" cargado exitosamente`,
+        });
+      }, 500);
+    } else {
+      toast({
+        title: "Función en desarrollo",
+        description: "La carga de debates se implementará pronto",
+        variant: "destructive",
+      });
+    }
   };
 
   const deleteChat = (chatId: number) => {
@@ -199,6 +237,15 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
   const tabs = [
     { 
+      id: 'chat' as TabType, 
+      label: 'Chat IA', 
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      )
+    },
+    { 
       id: 'ai-battle' as TabType, 
       label: 'Debate', 
       icon: (
@@ -230,6 +277,72 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'chat':
+        return (
+          <div className="flex-1 flex flex-col">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4">
+              {messages.length === 0 && !isLoading && (
+                <div className="text-center py-12">
+                  <div className="mb-4">
+                    <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    ¡Hola {username}! Escribe un mensaje para comenzar a conversar conmigo.
+                  </p>
+                </div>
+              )}
+              
+              {messages.map((message) => (
+                <MessageBubble key={message.id} message={message} />
+              ))}
+              
+              {isTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 md:p-4">
+              <form onSubmit={handleSendMessage} className="space-y-3">
+                <div className="flex items-end space-x-2">
+                  <div className="flex-1">
+                    <Textarea
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Escribe tu mensaje aquí..."
+                      className="min-h-[44px] max-h-32 resize-none text-sm border-gray-200 dark:border-gray-600 focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+                      disabled={isSending}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <VoiceControls 
+                      onTranscriptReceived={handleVoiceTranscript}
+                      lastAiMessage={lastAiMessage}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={!messageText.trim() || isSending}
+                      className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-1 h-[44px]"
+                    >
+                      {isSending ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      ) : (
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                      )}
+                      <span className="hidden sm:inline">Enviar</span>
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+
       case 'ai-battle':
         return <AIBattleTab username={username} />;
 
@@ -269,8 +382,10 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                     </Button>
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                    <span>Mensajes actuales: {messages.length}</span>
-                    {messages.length === 0 && (
+                    <span>
+                      {activeTab === 'chat' ? `Mensajes actuales: ${messages.length}` : 'Mensajes del debate activo'}
+                    </span>
+                    {activeTab === 'chat' && messages.length === 0 && (
                       <span className="text-orange-500">Sin mensajes para guardar</span>
                     )}
                   </div>
@@ -313,7 +428,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                           {chat.messages.length} mensajes • {new Date(chat.createdAt).toLocaleDateString()}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                          Usuario: {chat.username}
+                          {chat.type === 'chat' ? 'Chat Individual' : 'Debate de IAs'} • {chat.username}
                         </p>
                       </div>
                       <div className="flex space-x-1 ml-2">
