@@ -37,19 +37,51 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     utterance.pitch = 1;
     utterance.volume = 0.8;
 
-    // Función simple para simular movimiento
-    const simulateWordMovement = () => {
-      // Movimiento constante y suave mientras habla
-      return setInterval(() => {
-        // Solo mantener la animación CSS activa
-      }, 1000);
+    // Función para simular movimiento dinámico de VTuber
+    const simulateWordMovement = (text: string) => {
+      const words = text.split(' ');
+      let wordIndex = 0;
+      
+      const wordInterval = setInterval(() => {
+        if (wordIndex < words.length) {
+          const word = words[wordIndex];
+          // Variar la velocidad según el tipo de palabra
+          const baseSpeed = 0.3;
+          let speed = baseSpeed;
+          
+          // Palabras exclamativas más rápidas
+          if (word.includes('!') || word.includes('?')) {
+            speed = 0.15;
+          }
+          // Palabras largas más lentas
+          else if (word.length > 6) {
+            speed = 0.5;
+          }
+          // Palabras de emoción más dinámicas
+          else if (/^(wow|oh|ah|hey|hola|genial|increíble)$/i.test(word)) {
+            speed = 0.2;
+          }
+          
+          // Actualizar velocidad de animación
+          const mouthElement = document.querySelector('.mouth-talking') as HTMLElement;
+          if (mouthElement) {
+            mouthElement.style.animationDuration = `${speed}s`;
+          }
+          
+          wordIndex++;
+        } else {
+          clearInterval(wordInterval);
+        }
+      }, 400); // Velocidad de palabras
+      
+      return wordInterval;
     };
 
     let wordMovementInterval: NodeJS.Timeout;
 
     utterance.onstart = () => {
       setIsSpeaking(true);
-      wordMovementInterval = simulateWordMovement();
+      wordMovementInterval = simulateWordMovement(text);
     };
     
     utterance.onend = () => {
