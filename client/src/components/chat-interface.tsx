@@ -1,30 +1,57 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
-import { ThemeToggle } from "./theme-toggle";
-import { useToast } from "@/hooks/use-toast";
 
 interface ChatInterfaceProps {
   username: string;
-  onClearUsername: () => void;
 }
 
-type TabType = 'chat' | 'ai-battle' | 'settings' | 'accounts';
+// Componente de Avatar animado
+function Avatar({ isSpeaking, isTyping, username }: { isSpeaking: boolean; isTyping: boolean; username: string }) {
+  return (
+    <div className="flex flex-col items-center space-y-4 mb-8">
+      <div className={`relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center shadow-lg transition-all duration-300 ${
+        isSpeaking ? 'scale-110 shadow-xl' : isTyping ? 'scale-105' : 'scale-100'
+      }`}>
+        {/* Cara del avatar */}
+        <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-300 to-purple-500 flex items-center justify-center">
+          {/* Ojos */}
+          <div className="absolute top-8 left-8 w-3 h-3 bg-white rounded-full"></div>
+          <div className="absolute top-8 right-8 w-3 h-3 bg-white rounded-full"></div>
+          {/* Boca */}
+          <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-all duration-200 ${
+            isSpeaking ? 'w-8 h-4 bg-white rounded-full' : isTyping ? 'w-6 h-2 bg-white rounded-full' : 'w-4 h-1 bg-white rounded-full'
+          }`}></div>
+          
+          {/* Ondas de sonido cuando habla */}
+          {isSpeaking && (
+            <>
+              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-300 rounded-full animate-ping"></div>
+              <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-blue-200 rounded-full animate-ping" style={{ animationDelay: '0.1s' }}></div>
+              <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
+              <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-blue-200 rounded-full animate-ping" style={{ animationDelay: '0.3s' }}></div>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Asistente IA</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {isSpeaking ? '🔊 Hablando...' : isTyping ? '💭 Pensando...' : `¡Hola ${username}!`}
+        </p>
+      </div>
+    </div>
+  );
+}
 
-export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
+export function ChatInterface({ username }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
-  const [activeTab, setActiveTab] = useState<TabType>('chat');
-  const [aiPrompt, setAiPrompt] = useState(`Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`);
-  const [tempPrompt, setTempPrompt] = useState(aiPrompt);
-  const [savedChats, setSavedChats] = useState<any[]>([]);
-  const [currentChatName, setCurrentChatName] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const aiPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   const {
     messages,
@@ -32,32 +59,45 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     isTyping,
     sendMessage,
     isSending,
-    clearMessages,
-    isClearing,
     error,
   } = useChat(username, aiPrompt);
 
-  // Actualizar prompt cuando cambie el username
-  useEffect(() => {
-    const newPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
-    setAiPrompt(newPrompt);
-    setTempPrompt(newPrompt);
-  }, [username]);
+  // Función para texto a voz
+  const speakText = (text: string) => {
+    if (!window.speechSynthesis) {
+      console.log("Tu navegador no soporta texto a voz");
+      return;
+    }
 
+    // Cancelar cualquier síntesis en curso
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
 
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Auto scroll y reproducir voz cuando lleguen nuevos mensajes del asistente
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error",
-        description: error,
-        variant: "destructive",
-      });
+    
+    // Si el último mensaje es del asistente, reproducirlo
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.sender === 'assistant' && !isTyping && !isSpeaking) {
+      // Pequeño delay para que se complete la animación
+      setTimeout(() => {
+        speakText(lastMessage.content);
+      }, 500);
     }
-  }, [error, toast]);
+  }, [messages, isTyping]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,14 +109,12 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
 
     if (!trimmedMessage || isSending) return;
 
+    // Detener cualquier síntesis de voz en curso
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+
     sendMessage({ content: trimmedMessage });
     setMessageText("");
-  };
-
-  const handleClearChat = () => {
-    if (window.confirm("¿Estás seguro de que quieres limpiar el historial del chat?")) {
-      clearMessages();
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -86,756 +124,107 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     }
   };
 
-
-  const handleSavePrompt = () => {
-    setAiPrompt(tempPrompt);
-    toast({
-      title: "Configuración guardada",
-      description: "El prompt de la IA ha sido actualizado",
-    });
-  };
-
-  const handleLogout = () => {
-    if (window.confirm("¿Estás seguro de que quieres cerrar sesión?")) {
-      localStorage.removeItem('auth_user');
-      onClearUsername();
-    }
-  };
-
-  const saveCurrentChat = () => {
-    if (!currentChatName.trim()) {
-      toast({
-        title: "Error",
-        description: "Por favor ingresa un nombre para el chat",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let chatMessages: any[] = [];
-    let chatType = activeTab;
-
-    if (activeTab === 'chat') {
-      if (messages.length === 0) {
-        toast({
-          title: "Error",
-          description: "No hay mensajes para guardar",
-          variant: "destructive",
-        });
-        return;
-      }
-      chatMessages = messages;
-    } else if (activeTab === 'ai-battle') {
-      // Para obtener los mensajes del debate, necesitamos acceder al componente AIBattleTab
-      // Por ahora, mostraremos un mensaje indicando que esta función se implementará
-      toast({
-        title: "Función en desarrollo",
-        description: "El guardado de debates se implementará pronto",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const chatData = {
-      id: Date.now(),
-      name: currentChatName.trim(),
-      messages: chatMessages,
-      username: username,
-      createdAt: new Date().toISOString(),
-      prompt: aiPrompt,
-      type: chatType
-    };
-
-    const existingSaved = JSON.parse(localStorage.getItem('savedChats') || '[]');
-    const updatedChats = [...existingSaved, chatData];
-    localStorage.setItem('savedChats', JSON.stringify(updatedChats));
-    setSavedChats(updatedChats);
-    setCurrentChatName("");
-
-    toast({
-      title: "Chat guardado",
-      description: `Chat "${chatData.name}" guardado exitosamente`,
-    });
-  };
-
-  const loadSavedChats = () => {
-    const saved = JSON.parse(localStorage.getItem('savedChats') || '[]');
-    setSavedChats(saved);
-  };
-
-  const loadChat = (chatData: any) => {
-    if (chatData.type === 'chat') {
-      // Limpiar mensajes actuales
-      clearMessages();
-      
-      // Simular la carga de mensajes (en una implementación real, esto se haría a través de la API)
-      setTimeout(() => {
-        // Cambiar a la pestaña de chat
-        setActiveTab('chat');
-        
-        // Actualizar el prompt si existe
-        if (chatData.prompt) {
-          setAiPrompt(chatData.prompt);
-          setTempPrompt(chatData.prompt);
-        }
-        
-        toast({
-          title: "Chat cargado",
-          description: `Chat "${chatData.name}" cargado exitosamente`,
-        });
-      }, 500);
+  const toggleVoice = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     } else {
-      toast({
-        title: "Función en desarrollo",
-        description: "La carga de debates se implementará pronto",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const deleteChat = (chatId: number) => {
-    const existingSaved = JSON.parse(localStorage.getItem('savedChats') || '[]');
-    const updatedChats = existingSaved.filter((chat: any) => chat.id !== chatId);
-    localStorage.setItem('savedChats', JSON.stringify(updatedChats));
-    setSavedChats(updatedChats);
-
-    toast({
-      title: "Chat eliminado",
-      description: "El chat ha sido eliminado exitosamente",
-    });
-  };
-
-  const deleteAllChats = () => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar todos los chats guardados? Esta acción no se puede deshacer.")) {
-      localStorage.removeItem('savedChats');
-      setSavedChats([]);
-      toast({
-        title: "Todos los chats eliminados",
-        description: "Se han eliminado todos los chats guardados",
-      });
-    }
-  };
-
-  // Cargar chats guardados al montar el componente
-  useEffect(() => {
-    loadSavedChats();
-  }, []);
-
-  const tabs = [
-    { 
-      id: 'chat' as TabType, 
-      label: 'Chat IA', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      )
-    },
-    { 
-      id: 'ai-battle' as TabType, 
-      label: 'Debate', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-        </svg>
-      )
-    },
-    { 
-      id: 'accounts' as TabType, 
-      label: 'Chats', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      )
-    },
-    { 
-      id: 'settings' as TabType, 
-      label: 'Configuración', 
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
-    },
-  ];
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'chat':
-        return (
-          <div className="flex-1 flex flex-col">
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4">
-              {messages.length === 0 && !isLoading && (
-                <div className="text-center py-12">
-                  <div className="mb-4">
-                    <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    ¡Hola {username}! Escribe un mensaje para comenzar a conversar conmigo.
-                  </p>
-                </div>
-              )}
-              
-              {messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
-              
-              {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 md:p-4">
-              <form onSubmit={handleSendMessage} className="space-y-3">
-                <div className="flex items-end space-x-2">
-                  <div className="flex-1">
-                    <Textarea
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Escribe tu mensaje aquí..."
-                      className="min-h-[44px] max-h-32 resize-none text-sm border-gray-200 dark:border-gray-600 focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-                      disabled={isSending}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="submit"
-                      disabled={!messageText.trim() || isSending}
-                      className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-1 h-[44px]"
-                    >
-                      {isSending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      ) : (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
-                      )}
-                      <span className="hidden sm:inline">Enviar</span>
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        );
-
-      case 'ai-battle':
-        return <AIBattleTab username={username} />;
-
-      case 'accounts':
-        return (
-          <div className="flex-1 p-3 md:p-6 space-y-6">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Gestión de Chats</h3>
-              </div>
-              
-              {/* Guardar chat actual */}
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="flex items-center space-x-2 mb-3">
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  <h4 className="font-medium text-gray-800 dark:text-gray-200">Guardar Chat Actual</h4>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                    <Input
-                      value={currentChatName}
-                      onChange={(e) => setCurrentChatName(e.target.value)}
-                      placeholder="Nombre del chat..."
-                      className="flex-1 text-sm"
-                      maxLength={50}
-                    />
-                    <Button
-                      onClick={saveCurrentChat}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 text-sm font-medium w-full md:w-auto"
-                    >
-                      Guardar
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                    <span>
-                      {activeTab === 'chat' ? `Mensajes actuales: ${messages.length}` : 'Mensajes del debate activo'}
-                    </span>
-                    {activeTab === 'chat' && messages.length === 0 && (
-                      <span className="text-orange-500">Sin mensajes para guardar</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Lista de chats guardados */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-800 dark:text-gray-200">Chats Guardados ({savedChats.length})</h4>
-                {savedChats.length > 0 && (
-                  <Button
-                    onClick={deleteAllChats}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 text-xs"
-                  >
-                    Eliminar Todos
-                  </Button>
-                )}
-              </div>
-
-              {savedChats.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm">No tienes chats guardados</p>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-64 md:max-h-96 overflow-y-auto">
-                  {savedChats.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">
-                          {chat.name}
-                        </h5>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {chat.messages.length} mensajes • {new Date(chat.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                          {chat.type === 'chat' ? 'Chat Individual' : 'Debate de IAs'} • {chat.username}
-                        </p>
-                      </div>
-                      <div className="flex space-x-1 ml-2">
-                        <Button
-                          onClick={() => loadChat(chat)}
-                          size="sm"
-                          variant="outline"
-                          className="text-xs px-2 py-1"
-                        >
-                          Cargar
-                        </Button>
-                        <Button
-                          onClick={() => deleteChat(chat.id)}
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 text-xs px-2 py-1"
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'settings':
-        return (
-          <div className="flex-1 p-6 space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Configuración del Prompt de IA</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Prompt personalizado:
-                  </label>
-                  <Textarea
-                    value={tempPrompt}
-                    onChange={(e) => setTempPrompt(e.target.value)}
-                    placeholder="Escribe aquí cómo quieres que se comporte la IA..."
-                    className="w-full h-32 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-                  />
-                </div>
-                <Button
-                  onClick={handleSavePrompt}
-                  className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-                >
-                  Guardar Configuración
-                </Button>
-              </div>
-            </div>
-
-            <div className="border-t dark:border-gray-700 pt-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Información de Usuario</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400"><strong>Usuario:</strong> {username}</p>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900"
-                >
-                  Cerrar Sesión
-                </Button>
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="flex-1 flex flex-col">
-        {/* Header with Tabs */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-          <div className="px-3 md:px-6 py-3 border-b border-gray-100 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-800 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 md:w-3 md:h-3 bg-white rounded-full"></div>
-                </div>
-                <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-32 md:max-w-none">{username}</span>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearChat}
-                  disabled={isClearing}
-                  className="p-1 md:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  title="Limpiar chat"
-                >
-                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                  </svg>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex space-x-0 px-2 md:px-6 overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap min-w-0 ${
-                  activeTab === tab.id
-                    ? 'bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-b-2 border-blue-500 dark:border-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border-b-2 border-transparent'
-                }`}
-              >
-                <div className={`${activeTab === tab.id ? 'text-blue-500 dark:text-blue-400' : ''}`}>
-                  {tab.icon}
-                </div>
-                <span className="hidden sm:inline truncate">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tab Content */}
-        {renderTabContent()}
-      </div>
-    </div>
-  );
-}
-
-// Componente para la batalla de IAs
-function AIBattleTab({ username }: { username: string }) {
-  const [topic, setTopic] = useState("");
-  const [battleMessages, setBattleMessages] = useState<any[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [roundCount, setRoundCount] = useState(0);
-  const [numDebaters, setNumDebaters] = useState(2);
-  const [maxRounds, setMaxRounds] = useState(6);
-  const [debaters, setDebaters] = useState([
-    { id: 1, name: "IA Optimista", personality: "optimista y entusiasta", color: "blue" },
-    { id: 2, name: "IA Escéptica", personality: "escéptica y analítica", color: "red" }
-  ]);
-
-  const colors = ["blue", "red", "green", "purple", "orange", "pink", "indigo", "yellow"];
-
-  const addDebater = () => {
-    if (debaters.length < 8) {
-      const newId = debaters.length + 1;
-      const newDebater = {
-        id: newId,
-        name: `IA Debatiente ${newId}`,
-        personality: "neutral y equilibrada",
-        color: colors[debaters.length % colors.length]
-      };
-      setDebaters([...debaters, newDebater]);
-      setNumDebaters(debaters.length + 1);
-    }
-  };
-
-  const removeDebater = (id: number) => {
-    if (debaters.length > 2) {
-      setDebaters(debaters.filter(d => d.id !== id));
-      setNumDebaters(debaters.length - 1);
-    }
-  };
-
-  const updateDebater = (id: number, field: string, value: string) => {
-    setDebaters(debaters.map(d => 
-      d.id === id ? { ...d, [field]: value } : d
-    ));
-  };
-
-  const startBattle = async () => {
-    if (!topic.trim()) return;
-    
-    setIsRunning(true);
-    setRoundCount(0);
-    setBattleMessages([]);
-
-    let currentTopic = topic;
-    
-    for (let round = 0; round < maxRounds; round++) {
-      setRoundCount(round + 1);
-      
-      for (let i = 0; i < debaters.length; i++) {
-        const debater = debaters[i];
-        const otherDebaters = debaters.filter(d => d.id !== debater.id).map(d => d.name).join(", ");
-        
-        const prompt = round === 0 && i === 0
-          ? `Eres una IA ${debater.personality} llamada "${debater.name}". Estás en un debate con ${otherDebaters}. Responde de manera ${debater.personality} sobre el tema: ${currentTopic}. NO te dirijas al usuario, habla directamente como si fueras un participante del debate. Mantén tu respuesta concisa (máximo 150 palabras).`
-          : `Eres una IA ${debater.personality} llamada "${debater.name}". Estás debatiendo con ${otherDebaters}. Responde de manera ${debater.personality} a este argumento: "${currentTopic}". Contraargumenta de forma constructiva manteniendo tu personalidad. NO menciones al usuario. Mantén tu respuesta concisa (máximo 150 palabras).`;
-        
-        const response = await sendBattleMessage(prompt, `ai${debater.id}`, username);
-        
-        setBattleMessages(prev => [...prev, {
-          id: Date.now() + Math.random(),
-          content: response,
-          sender: `ai${debater.id}`,
-          aiName: debater.name,
-          color: debater.color,
-          round: round + 1
-        }]);
-        
-        currentTopic = response;
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      const lastAssistantMessage = messages.slice().reverse().find(m => m.sender === 'assistant');
+      if (lastAssistantMessage) {
+        speakText(lastAssistantMessage.content);
       }
     }
-    
-    setIsRunning(false);
-  };
-
-  const sendBattleMessage = async (prompt: string, aiId: string, username: string) => {
-    try {
-      const response = await fetch('/api/battle-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, aiId, username })
-      });
-      
-      if (!response.ok) throw new Error('Error en la respuesta');
-      
-      const data = await response.json();
-      return data.response;
-    } catch (error) {
-      return "Error al generar respuesta";
-    }
-  };
-
-  const getColorClasses = (color: string) => {
-    const colorMap: Record<string, string> = {
-      blue: 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 border-blue-200 dark:border-blue-800',
-      red: 'bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800',
-      green: 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800',
-      purple: 'bg-purple-50 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100 border-purple-200 dark:border-purple-800',
-      orange: 'bg-orange-50 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-200 dark:border-orange-800',
-      pink: 'bg-pink-50 dark:bg-pink-900/30 text-pink-900 dark:text-pink-100 border-pink-200 dark:border-pink-800',
-      indigo: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 border-indigo-200 dark:border-indigo-800',
-      yellow: 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-200 dark:border-yellow-800'
-    };
-    return colorMap[color] || colorMap.blue;
-  };
-
-  const getDotColor = (color: string) => {
-    const colorMap: Record<string, string> = {
-      blue: 'bg-blue-500',
-      red: 'bg-red-500',
-      green: 'bg-green-500',
-      purple: 'bg-purple-500',
-      orange: 'bg-orange-500',
-      pink: 'bg-pink-500',
-      indigo: 'bg-indigo-500',
-      yellow: 'bg-yellow-500'
-    };
-    return colorMap[color] || colorMap.blue;
   };
 
   return (
-    <div className="flex-1 flex flex-col p-3 md:p-6">
-      <div className="mb-4 md:mb-6">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Debate de IAs Múltiples</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Configura múltiples IAs con diferentes personalidades para debatir sobre cualquier tema.
-        </p>
-        
-        {/* Configuración de debatientes */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-gray-900 dark:text-gray-100">Debatientes ({debaters.length})</h3>
-            <Button
-              onClick={addDebater}
-              disabled={debaters.length >= 8 || isRunning}
-              size="sm"
-              className="text-xs"
-            >
-              Agregar Debatiente
-            </Button>
-          </div>
-          
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {debaters.map((debater, index) => (
-              <div key={debater.id} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                <div className={`w-3 h-3 rounded-full ${getDotColor(debater.color)}`}></div>
-                <Input
-                  value={debater.name}
-                  onChange={(e) => updateDebater(debater.id, 'name', e.target.value)}
-                  className="flex-1 text-xs h-8"
-                  placeholder="Nombre del debatiente"
-                  disabled={isRunning}
-                />
-                <Input
-                  value={debater.personality}
-                  onChange={(e) => updateDebater(debater.id, 'personality', e.target.value)}
-                  className="flex-1 text-xs h-8"
-                  placeholder="Personalidad"
-                  disabled={isRunning}
-                />
-                {debaters.length > 2 && (
-                  <Button
-                    onClick={() => removeDebater(debater.id)}
-                    disabled={isRunning}
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 hover:text-red-700 text-xs p-1 w-8 h-8"
-                  >
-                    ✕
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Avatar en la parte superior */}
+      <div className="flex-shrink-0 pt-8 px-6">
+        <Avatar isSpeaking={isSpeaking} isTyping={isTyping} username={username} />
+      </div>
 
-        {/* Configuración del debate */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Tema del debate
-              </label>
-              <Input
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="Tema para el debate..."
-                className="text-sm"
-                disabled={isRunning}
-              />
+      {/* Área de mensajes */}
+      <div className="flex-1 overflow-y-auto px-6 pb-4">
+        <div className="max-w-4xl mx-auto space-y-4">
+          {messages.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
+                Escribe un mensaje para comenzar a conversar conmigo
+              </p>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Máximo de rondas
-              </label>
-              <Input
-                type="number"
-                value={maxRounds}
-                onChange={(e) => setMaxRounds(Math.max(1, Math.min(10, parseInt(e.target.value) || 6)))}
-                min={1}
-                max={10}
-                className="text-sm"
-                disabled={isRunning}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                onClick={startBattle}
-                disabled={!topic.trim() || isRunning}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200"
-              >
-                {isRunning ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    <span>Debatiendo...</span>
-                  </div>
-                ) : (
-                  'Iniciar Debate'
-                )}
-              </Button>
-            </div>
-          </div>
+          )}
           
-          {isRunning && (
-            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-gray-600 dark:text-gray-400">
-                  Ronda {roundCount} de {maxRounds}
-                </span>
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    {debaters.map((debater, i) => (
-                      <div key={debater.id} className={`w-2 h-2 rounded-full ${getDotColor(debater.color)} animate-pulse`}></div>
-                    ))}
-                  </div>
-                  <span className="text-gray-600 dark:text-gray-400">Debate en progreso</span>
-                </div>
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          
+          {isTyping && <TypingIndicator />}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Área de entrada de texto */}
+      <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSendMessage} className="space-y-3">
+            <div className="flex items-end space-x-3">
+              <div className="flex-1">
+                <Textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Escribe tu mensaje aquí..."
+                  className="min-h-[60px] max-h-32 resize-none text-base border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl"
+                  disabled={isSending}
+                  data-testid="input-message"
+                />
               </div>
-              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(roundCount / maxRounds) * 100}%` }}
-                ></div>
+              <div className="flex items-center space-x-2">
+                {/* Botón de control de voz */}
+                <Button
+                  type="button"
+                  onClick={toggleVoice}
+                  variant="outline"
+                  className="h-[60px] px-4 rounded-xl border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  data-testid="button-toggle-voice"
+                >
+                  {isSpeaking ? (
+                    <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                  )}
+                </Button>
+                
+                {/* Botón de enviar */}
+                <Button
+                  type="submit"
+                  disabled={!messageText.trim() || isSending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white h-[60px] px-6 rounded-xl transition-all duration-200 flex items-center space-x-2"
+                  data-testid="button-send"
+                >
+                  {isSending ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  ) : (
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                  )}
+                  <span>Enviar</span>
+                </Button>
               </div>
+            </div>
+          </form>
+          
+          {error && (
+            <div className="mt-3 p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 text-sm">
+              Error: {error}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto space-y-3">
-        {battleMessages.length === 0 && !isRunning && (
-          <div className="text-center py-12">
-            <div className="mb-4">
-              <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-              </svg>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Configura los debatientes y el tema arriba para comenzar el debate
-            </p>
-          </div>
-        )}
-        
-        {battleMessages.map((message, index) => (
-          <div
-            key={message.id}
-            className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'} animate-fadeIn`}
-          >
-            <div
-              className={`max-w-[90%] md:max-w-[70%] px-4 py-3 rounded-2xl shadow-sm border ${getColorClasses(message.color)}`}
-            >
-              <div className="flex items-center space-x-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${getDotColor(message.color)}`}></div>
-                <span className="text-xs font-semibold opacity-75">
-                  {message.aiName}
-                </span>
-                <span className="text-xs opacity-50">
-                  Ronda {message.round}
-                </span>
-              </div>
-              <div className="text-sm leading-relaxed">{message.content}</div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
