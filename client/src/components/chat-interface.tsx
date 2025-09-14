@@ -79,8 +79,8 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
         return wordInterval;
       };
 
-      // Generar y reproducir audio con GetVoices.ai
-      const audioUrl = await generateVoiceAudio(text, "genny");
+      // Generar y reproducir audio con GetVoices.ai - voz masculina
+      const audioUrl = await generateVoiceAudio(text, "adam");
       
       // Estimar duración basada en el texto (aproximación)
       const estimatedDuration = text.length * 80; // ~80ms por carácter

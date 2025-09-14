@@ -7,8 +7,14 @@ export function SimpleFace({ isSpeaking = false }: SimpleFaceProps) {
     <div className="flex flex-col items-center justify-center h-screen">
       {/* Cara simple y tierna */}
       <div className="relative mb-16">
+        
+        {/* Ojos simples */}
+        <div className="flex space-x-8 mb-6 justify-center">
+          <div className="w-12 h-12 bg-white rounded-full"></div>
+          <div className="w-12 h-12 bg-white rounded-full"></div>
+        </div>
 
-        {/* Solo la boca - más tierna y simple */}
+        {/* Boca - más tierna y simple */}
         <div className="relative mx-auto w-32 h-6 flex items-center justify-center">
           {isSpeaking ? (
             // Boca cuando habla - más sutil
