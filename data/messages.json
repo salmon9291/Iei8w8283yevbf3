@@ -18,5 +18,85 @@
       "id": 10,
       "timestamp": "2025-09-14T04:46:54.335Z"
     }
+  ],
+  [
+    1,
+    {
+      "content": "Perro",
+      "sender": "user",
+      "username": "Perro",
+      "id": 1,
+      "timestamp": "2025-09-14T05:03:05.282Z"
+    }
+  ],
+  [
+    2,
+    {
+      "content": "¡Hola, Perro!  ¿Cómo estás?  Espero que estés teniendo un día maravilloso.  Dime, ¿en qué te puedo ayudar, Perro? Asistente está aquí para ti.\n",
+      "sender": "ai",
+      "username": "Perro",
+      "id": 2,
+      "timestamp": "2025-09-14T05:03:06.183Z"
+    }
+  ],
+  [
+    3,
+    {
+      "content": "Perro",
+      "sender": "user",
+      "username": "Perro",
+      "id": 3,
+      "timestamp": "2025-09-14T05:03:12.071Z"
+    }
+  ],
+  [
+    4,
+    {
+      "content": "¡Hola, Perro!  ¿Cómo estás?  Espero que tengas un día genial.  Dime, ¿en qué te puedo ayudar hoy, Perro?  Asistente está aquí para ti.\n",
+      "sender": "ai",
+      "username": "Perro",
+      "id": 4,
+      "timestamp": "2025-09-14T05:03:12.879Z"
+    }
+  ],
+  [
+    5,
+    {
+      "content": "Hola",
+      "sender": "user",
+      "username": "Perro",
+      "id": 5,
+      "timestamp": "2025-09-14T05:03:21.106Z"
+    }
+  ],
+  [
+    6,
+    {
+      "content": "¡Hola, Perro!  ¿Cómo estás? Espero que tengas un día genial.  Asistente está aquí para ayudarte en lo que necesites.\n",
+      "sender": "ai",
+      "username": "Perro",
+      "id": 6,
+      "timestamp": "2025-09-14T05:03:21.765Z"
+    }
+  ],
+  [
+    7,
+    {
+      "content": "Que haced",
+      "sender": "user",
+      "username": "Perro",
+      "id": 7,
+      "timestamp": "2025-09-14T05:03:24.881Z"
+    }
+  ],
+  [
+    8,
+    {
+      "content": "¡Hola, Perro!  ¿Qué haces tú?  Espero que estés teniendo un día genial.  Cuéntame, Asistente está aquí para escucharte.\n",
+      "sender": "ai",
+      "username": "Perro",
+      "id": 8,
+      "timestamp": "2025-09-14T05:03:25.371Z"
+    }
   ]
 ]
