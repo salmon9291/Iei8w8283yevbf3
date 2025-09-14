@@ -18,9 +18,11 @@ externalPort = 80
 localPort = 39293
 externalPort = 3001
 
-[[ports]]
-localPort = 40481
-externalPort = 3000
+[env]
+PORT = "5000"
+
+[agent]
+integrations = ["javascript_openai:1.0.0", "javascript_gemini:1.0.0"]
 
 [workflows]
 runButton = "Project"

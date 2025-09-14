@@ -1,66 +1,73 @@
-import { users, messages, type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
+import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getMessagesByUsername(username: string): Promise<Message[]>;
+  getMessages(username: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
-  clearMessagesByUsername(username: string): Promise<void>;
-}
-
-const DATA_DIR = join(process.cwd(), 'data');
-const MESSAGES_FILE = join(DATA_DIR, 'messages.json');
-const USERS_FILE = join(DATA_DIR, 'users.json');
-
-// Crear directorio de datos si no existe
-if (!existsSync(DATA_DIR)) {
-  require('fs').mkdirSync(DATA_DIR, { recursive: true });
+  clearMessages(username: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
+  private users: Map<string, User>;
   private messages: Map<number, Message>;
-  private currentUserId: number;
-  private currentMessageId: number;
+  private messageCounter: number = 1;
+  private usersFilePath: string;
+  private messagesFilePath: string;
 
   constructor() {
     this.users = new Map();
     this.messages = new Map();
-    this.currentUserId = 1;
-    this.currentMessageId = 1;
+    this.usersFilePath = path.join(process.cwd(), "data", "users.json");
+    this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");
+    
+    // Ensure data directory exists
+    const dataDir = path.dirname(this.usersFilePath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
     this.loadData();
   }
 
   private loadData() {
     try {
-      if (existsSync(MESSAGES_FILE)) {
-        const messagesData = readFileSync(MESSAGES_FILE, 'utf-8');
-        this.messages = new Map(JSON.parse(messagesData));
+      if (fs.existsSync(this.usersFilePath)) {
+        const usersData = JSON.parse(fs.readFileSync(this.usersFilePath, "utf-8"));
+        this.users = new Map(usersData);
       }
-      if (existsSync(USERS_FILE)) {
-        const usersData = readFileSync(USERS_FILE, 'utf-8');
-        this.users = new Map(JSON.parse(usersData));
+      
+      if (fs.existsSync(this.messagesFilePath)) {
+        const messagesData = JSON.parse(fs.readFileSync(this.messagesFilePath, "utf-8"));
+        this.messages = new Map(messagesData);
+        this.messageCounter = Math.max(...Array.from(this.messages.keys()), 0) + 1;
       }
     } catch (error) {
-      console.error('Error loading data:', error);
-      this.messages = new Map();
-      this.users = new Map();
+      console.error("Error loading data:", error);
     }
   }
 
-  private saveData() {
+  private saveUsers() {
     try {
-      writeFileSync(MESSAGES_FILE, JSON.stringify(Array.from(this.messages.entries()), null, 2));
-      writeFileSync(USERS_FILE, JSON.stringify(Array.from(this.users.entries()), null, 2));
+      fs.writeFileSync(this.usersFilePath, JSON.stringify(Array.from(this.users.entries())));
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error("Error saving users:", error);
     }
   }
 
-  async getUser(id: number): Promise<User | undefined> {
+  private saveMessages() {
+    try {
+      fs.writeFileSync(this.messagesFilePath, JSON.stringify(Array.from(this.messages.entries())));
+    } catch (error) {
+      console.error("Error saving messages:", error);
+    }
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
 
@@ -71,38 +78,38 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
+    const id = randomUUID();
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
-    this.saveData();
+    this.saveUsers();
     return user;
   }
 
-  async getMessagesByUsername(username: string): Promise<Message[]> {
+  async getMessages(username: string): Promise<Message[]> {
     return Array.from(this.messages.values())
       .filter((message) => message.username === username)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      .sort((a, b) => a.id - b.id);
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = this.currentMessageId++;
-    const message: Message = {
-      ...insertMessage,
+    const id = this.messageCounter++;
+    const message: Message = { 
+      ...insertMessage, 
       id,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date()
     };
     this.messages.set(id, message);
-    this.saveData();
+    this.saveMessages();
     return message;
   }
 
-  async clearMessagesByUsername(username: string): Promise<void> {
+  async clearMessages(username: string): Promise<void> {
     const messagesToDelete = Array.from(this.messages.entries())
-      .filter(([_, message]) => message.username === username)
-      .map(([id, _]) => id);
-
+      .filter(([, message]) => message.username === username)
+      .map(([id]) => id);
+    
     messagesToDelete.forEach(id => this.messages.delete(id));
-    this.saveData();
+    this.saveMessages();
   }
 }
 

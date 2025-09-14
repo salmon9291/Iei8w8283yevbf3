@@ -1,60 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { sendMessage, getMessages, clearMessages } from "@/lib/gemini";
+import { sendMessage, getMessages } from "@/lib/api";
 import type { Message } from "@shared/schema";
 
-export function useChat(username: string | null, customPrompt?: string) {
-  const [isTyping, setIsTyping] = useState(false);
+export function useChat(username: string) {
   const queryClient = useQueryClient();
 
   const messagesQuery = useQuery({
     queryKey: ["/api/messages", username],
-    queryFn: () => getMessages(username!),
+    queryFn: () => getMessages(username),
     enabled: !!username,
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: ({ content }: { content: string }) => sendMessage(content, username!, customPrompt),
-    onMutate: () => {
-      setIsTyping(true);
-    },
+    mutationFn: ({ content }: { content: string }) => sendMessage(content, username),
     onSuccess: (data) => {
-      // Update the messages cache with both user and AI messages
       queryClient.setQueryData(["/api/messages", username], (oldMessages: Message[] = []) => [
         ...oldMessages,
         data.userMessage,
         data.aiMessage,
       ]);
-      setIsTyping(false);
-
-      // Return the AI message for auto-speaking
-      return data.aiMessage;
     },
     onError: (error) => {
-      setIsTyping(false);
-      // Log the error
       console.error("Error sending message:", error);
-      // Optionally, update the state to show an error message to the user.
-      // For example, you could set an error state and display it in the UI.
-      // Example: setError("Failed to send message. Please try again.");
-    },
-  });
-
-  const clearMessagesMutation = useMutation({
-    mutationFn: () => clearMessages(username!),
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/messages", username], []);
     },
   });
 
   return {
     messages: messagesQuery.data || [],
     isLoading: messagesQuery.isLoading,
-    isTyping,
     sendMessage: sendMessageMutation.mutate,
     isSending: sendMessageMutation.isPending,
-    clearMessages: clearMessagesMutation.mutate,
-    isClearing: clearMessagesMutation.isPending,
     error: sendMessageMutation.error?.message,
   };
 }
