@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChat } from "@/hooks/use-chat";
 import { SimpleFace } from "./simple-face";
+import { generateVoiceAudio, playVoiceAudio } from "@/lib/getvoices";
 
 interface ChatInterfaceProps {
   username: string;
@@ -22,79 +23,96 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     error,
   } = useChat(username);
 
-  // Función para texto a voz con movimiento dinámico
-  const speakText = (text: string) => {
-    if (!window.speechSynthesis) {
-      console.log("Tu navegador no soporta texto a voz");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-ES';
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
-
-    // Función para simular movimiento dinámico de VTuber
-    const simulateWordMovement = (text: string) => {
-      const words = text.split(' ');
-      let wordIndex = 0;
-      
-      const wordInterval = setInterval(() => {
-        if (wordIndex < words.length) {
-          const word = words[wordIndex];
-          // Variar la velocidad según el tipo de palabra
-          const baseSpeed = 0.3;
-          let speed = baseSpeed;
-          
-          // Palabras exclamativas más rápidas
-          if (word.includes('!') || word.includes('?')) {
-            speed = 0.15;
-          }
-          // Palabras largas más lentas
-          else if (word.length > 6) {
-            speed = 0.5;
-          }
-          // Palabras de emoción más dinámicas
-          else if (/^(wow|oh|ah|hey|hola|genial|increíble)$/i.test(word)) {
-            speed = 0.2;
-          }
-          
-          // Actualizar velocidad de animación
-          const mouthElement = document.querySelector('.mouth-talking') as HTMLElement;
-          if (mouthElement) {
-            mouthElement.style.animationDuration = `${speed}s`;
-          }
-          
-          wordIndex++;
-        } else {
-          clearInterval(wordInterval);
-        }
-      }, 400); // Velocidad de palabras
-      
-      return wordInterval;
-    };
-
-    let wordMovementInterval: NodeJS.Timeout;
-
-    utterance.onstart = () => {
+  // Función para texto a voz con GetVoices.ai y movimiento dinámico de VTuber
+  const speakText = async (text: string) => {
+    try {
       setIsSpeaking(true);
-      wordMovementInterval = simulateWordMovement(text);
-    };
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (wordMovementInterval) clearInterval(wordMovementInterval);
-    };
-    
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-      if (wordMovementInterval) clearInterval(wordMovementInterval);
-    };
+      
+      // Función para simular movimiento dinámico de VTuber más realista
+      const simulateVTuberMovement = (text: string, duration: number) => {
+        const words = text.split(' ');
+        const wordDuration = duration / words.length;
+        let wordIndex = 0;
+        
+        const wordInterval = setInterval(() => {
+          if (wordIndex < words.length) {
+            const word = words[wordIndex];
+            // Variar la intensidad según el tipo de palabra
+            let intensity = 0.3;
+            
+            // Palabras emocionales más intensas
+            if (/^(wow|oh|ah|hey|hola|genial|increíble|perfecto|excelente)$/i.test(word)) {
+              intensity = 0.15;
+            }
+            // Palabras interrogativas
+            else if (word.includes('?') || /^(qué|cómo|cuándo|dónde|por qué)$/i.test(word)) {
+              intensity = 0.2;
+            }
+            // Palabras exclamativas
+            else if (word.includes('!')) {
+              intensity = 0.18;
+            }
+            // Palabras largas más expresivas
+            else if (word.length > 7) {
+              intensity = 0.4;
+            }
+            
+            // Actualizar velocidad de animación de manera más dinámica
+            const mouthElement = document.querySelector('.mouth-talking') as HTMLElement;
+            if (mouthElement) {
+              mouthElement.style.animationDuration = `${intensity}s`;
+              // Añadir variación en la intensidad
+              if (Math.random() > 0.7) {
+                mouthElement.style.transform = `scale(${1 + Math.random() * 0.3})`;
+                setTimeout(() => {
+                  mouthElement.style.transform = 'scale(1)';
+                }, intensity * 500);
+              }
+            }
+            
+            wordIndex++;
+          } else {
+            clearInterval(wordInterval);
+          }
+        }, wordDuration); // Velocidad ajustada al audio real
+        
+        return wordInterval;
+      };
 
-    window.speechSynthesis.speak(utterance);
+      // Generar y reproducir audio con GetVoices.ai
+      const audioUrl = await generateVoiceAudio(text, "genny");
+      
+      // Estimar duración basada en el texto (aproximación)
+      const estimatedDuration = text.length * 80; // ~80ms por carácter
+      
+      // Iniciar animación VTuber
+      const movementInterval = simulateVTuberMovement(text, estimatedDuration);
+      
+      // Reproducir audio
+      await playVoiceAudio(audioUrl);
+      
+      // Limpiar
+      clearInterval(movementInterval);
+      setIsSpeaking(false);
+      
+    } catch (error) {
+      console.error("Error con GetVoices.ai, usando voz nativa como respaldo:", error);
+      setIsSpeaking(false);
+      
+      // Fallback a voz nativa
+      if (window.speechSynthesis) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.1;
+        utterance.volume = 0.9;
+        
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        
+        window.speechSynthesis.speak(utterance);
+      }
+    }
   };
 
   // Auto scroll y reproducir voz cuando lleguen nuevos mensajes del asistente
@@ -103,8 +121,8 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.sender === 'assistant' && !isSpeaking) {
-      setTimeout(() => {
-        speakText(lastMessage.content);
+      setTimeout(async () => {
+        await speakText(lastMessage.content);
       }, 500);
     }
   }, [messages]);
@@ -115,7 +133,13 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
 
     if (!trimmedMessage || isSending) return;
 
+    // Detener cualquier audio en reproducción
     window.speechSynthesis.cancel();
+    // Pausar todos los elementos de audio
+    document.querySelectorAll('audio').forEach(audio => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
     setIsSpeaking(false);
 
     sendMessage({ content: trimmedMessage });
