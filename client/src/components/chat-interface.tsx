@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 import { TypingIndicator } from "./typing-indicator";
-import { VoiceControls } from "./voice-controls";
 import { ThemeToggle } from "./theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,7 +19,6 @@ type TabType = 'chat' | 'ai-battle' | 'settings' | 'accounts';
 export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps) {
   const [messageText, setMessageText] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>('chat');
-  const [lastAiMessage, setLastAiMessage] = useState<string>("");
   const [aiPrompt, setAiPrompt] = useState(`Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`);
   const [tempPrompt, setTempPrompt] = useState(aiPrompt);
   const [savedChats, setSavedChats] = useState<any[]>([]);
@@ -46,15 +44,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     setTempPrompt(newPrompt);
   }, [username]);
 
-  // Track last AI message for voice controls
-  useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.sender === 'ai') {
-        setLastAiMessage(lastMessage.content);
-      }
-    }
-  }, [messages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -97,9 +86,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
     }
   };
 
-  const handleVoiceTranscript = (transcript: string) => {
-    setMessageText(transcript);
-  };
 
   const handleSavePrompt = () => {
     setAiPrompt(tempPrompt);
@@ -126,7 +112,7 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
       return;
     }
 
-    let chatMessages = [];
+    let chatMessages: any[] = [];
     let chatType = activeTab;
 
     if (activeTab === 'chat') {
@@ -318,10 +304,6 @@ export function ChatInterface({ username, onClearUsername }: ChatInterfaceProps)
                     />
                   </div>
                   <div className="flex items-center space-x-2">
-                    <VoiceControls 
-                      onTranscriptReceived={handleVoiceTranscript}
-                      lastAiMessage={lastAiMessage}
-                    />
                     <Button
                       type="submit"
                       disabled={!messageText.trim() || isSending}

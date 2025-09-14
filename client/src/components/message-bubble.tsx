@@ -23,8 +23,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         <div className="mt-2 text-xs opacity-70">
-          {message.createdAt ? 
-            new Date(message.createdAt).toLocaleTimeString([], {
+          {message.timestamp ? 
+            new Date(message.timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit'
             }) : 

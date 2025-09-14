@@ -4,7 +4,24 @@ import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCmlpC0g1UrSunQeoGUklSRf2o1LD5xlGo";
+// API Key load balancing setup
+const GEMINI_API_KEYS = [
+  process.env.GEMINI_API_KEY_1!,
+  process.env.GEMINI_API_KEY_2!
+].filter(Boolean); // Remove any undefined keys
+
+let currentKeyIndex = 0;
+
+// Get next API key using round-robin load balancing
+function getNextApiKey(): string {
+  if (GEMINI_API_KEYS.length === 0) {
+    throw new Error('No Gemini API keys configured');
+  }
+  
+  const key = GEMINI_API_KEYS[currentKeyIndex];
+  currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
+  return key;
+}
 
 // Función para extraer contenido de URLs
 async function extractContentFromUrl(url: string): Promise<string> {
@@ -137,8 +154,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
+        const apiKey = getNextApiKey();
         const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
           {
             method: "POST",
             headers: {
@@ -200,8 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { prompt, aiId, username } = req.body;
 
+      const apiKey = getNextApiKey();
       const geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: {
