@@ -22,7 +22,7 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     error,
   } = useChat(username);
 
-  // Función para texto a voz
+  // Función para texto a voz con movimiento dinámico
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
       console.log("Tu navegador no soporta texto a voz");
@@ -37,9 +37,48 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     utterance.pitch = 1;
     utterance.volume = 0.8;
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    // Función para simular movimiento por palabra
+    const simulateWordMovement = (text: string) => {
+      const words = text.split(' ');
+      let wordIndex = 0;
+      
+      const wordInterval = setInterval(() => {
+        if (wordIndex < words.length) {
+          // Cambiar la velocidad de la animación según la longitud de la palabra
+          const wordLength = words[wordIndex].length;
+          const animationSpeed = Math.max(0.08, 0.2 - (wordLength * 0.02));
+          
+          // Actualizar la velocidad de la animación CSS
+          const mouthElement = document.querySelector('.mouth-talking') as HTMLElement;
+          if (mouthElement) {
+            mouthElement.style.animationDuration = `${animationSpeed}s`;
+          }
+          
+          wordIndex++;
+        } else {
+          clearInterval(wordInterval);
+        }
+      }, 600); // Aproximadamente 100 palabras por minuto
+      
+      return wordInterval;
+    };
+
+    let wordMovementInterval: NodeJS.Timeout;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      wordMovementInterval = simulateWordMovement(text);
+    };
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      if (wordMovementInterval) clearInterval(wordMovementInterval);
+    };
+    
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      if (wordMovementInterval) clearInterval(wordMovementInterval);
+    };
 
     window.speechSynthesis.speak(utterance);
   };

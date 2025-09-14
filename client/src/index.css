@@ -7,16 +7,25 @@
 
 /* Animaciones para la cara que habla */
 @keyframes mouth-talk {
-  0%, 100% { 
-    transform: scaleY(1);
+  0% { 
+    transform: scaleY(1) scaleX(1);
+  }
+  25% { 
+    transform: scaleY(0.7) scaleX(1.2);
   }
   50% { 
-    transform: scaleY(1.3);
+    transform: scaleY(1.1) scaleX(0.9);
+  }
+  75% { 
+    transform: scaleY(0.8) scaleX(1.1);
+  }
+  100% { 
+    transform: scaleY(1) scaleX(1);
   }
 }
 
 .mouth-talking {
-  animation: mouth-talk 0.3s ease-in-out infinite;
+  animation: mouth-talk 0.15s ease-in-out infinite;
 }
 
 :root {
