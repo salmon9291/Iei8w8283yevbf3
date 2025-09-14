@@ -17,13 +17,11 @@ export function SimpleFace({ isSpeaking = false }: SimpleFaceProps) {
         {/* Boca - diferentes formas según si está hablando */}
         <div className="relative mx-auto w-32 h-6 flex items-center justify-center">
           {isSpeaking ? (
-            // Boca animada cuando habla - formas suaves
-            <div className="relative">
-              <div className="w-16 h-8 border-2 border-white rounded-full mouth-talking"></div>
-            </div>
+            // Boca animada cuando habla - muy sutil
+            <div className="w-12 h-3 border border-white rounded-full mouth-talking"></div>
           ) : (
             // Boca normal - línea horizontal
-            <div className="w-32 h-2 bg-white rounded"></div>
+            <div className="w-16 h-1 bg-white rounded"></div>
           )}
         </div>
       </div>

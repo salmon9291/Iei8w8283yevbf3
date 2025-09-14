@@ -37,37 +37,19 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     utterance.pitch = 1;
     utterance.volume = 0.8;
 
-    // Función para simular movimiento por palabra
-    const simulateWordMovement = (text: string) => {
-      const words = text.split(' ');
-      let wordIndex = 0;
-      
-      const wordInterval = setInterval(() => {
-        if (wordIndex < words.length) {
-          // Cambiar la velocidad de la animación según la longitud de la palabra
-          const wordLength = words[wordIndex].length;
-          const animationSpeed = Math.max(0.08, 0.2 - (wordLength * 0.02));
-          
-          // Actualizar la velocidad de la animación CSS
-          const mouthElement = document.querySelector('.mouth-talking') as HTMLElement;
-          if (mouthElement) {
-            mouthElement.style.animationDuration = `${animationSpeed}s`;
-          }
-          
-          wordIndex++;
-        } else {
-          clearInterval(wordInterval);
-        }
-      }, 600); // Aproximadamente 100 palabras por minuto
-      
-      return wordInterval;
+    // Función simple para simular movimiento
+    const simulateWordMovement = () => {
+      // Movimiento constante y suave mientras habla
+      return setInterval(() => {
+        // Solo mantener la animación CSS activa
+      }, 1000);
     };
 
     let wordMovementInterval: NodeJS.Timeout;
 
     utterance.onstart = () => {
       setIsSpeaking(true);
-      wordMovementInterval = simulateWordMovement(text);
+      wordMovementInterval = simulateWordMovement();
     };
     
     utterance.onend = () => {
@@ -124,19 +106,19 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
 
       {/* Área de chat en la parte inferior */}
       <div className="p-6 border-t border-gray-800">
-        {/* Mensajes */}
+        {/* Mostrar solo el último mensaje del usuario */}
         {messages.length > 0 && (
-          <div className="mb-4 max-h-40 overflow-y-auto space-y-2">
-            {messages.slice(-3).map((message) => (
-              <div key={message.id} className="text-sm">
-                <span className="text-gray-400">
-                  {message.sender === 'user' ? username : 'Asistente'}:
-                </span>
-                <span className="ml-2 text-white">
-                  {message.content}
-                </span>
-              </div>
-            ))}
+          <div className="mb-4">
+            {(() => {
+              const lastUserMessage = messages.filter(m => m.sender === 'user').slice(-1)[0];
+              return lastUserMessage ? (
+                <div className="text-sm text-center">
+                  <span className="text-gray-500 text-xs">
+                    "{lastUserMessage.content}"
+                  </span>
+                </div>
+              ) : null;
+            })()}
             <div ref={messagesEndRef} />
           </div>
         )}
