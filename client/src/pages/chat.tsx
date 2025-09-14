@@ -33,12 +33,12 @@ export default function Chat() {
           {/* Cara simple para la pantalla de entrada */}
           <div className="mb-12">
             <div className="flex space-x-8 mb-6 justify-center">
-              <div className="w-16 h-16 bg-white rounded-full"></div>
-              <div className="w-16 h-16 bg-white rounded-full"></div>
+              <div className="w-16 h-16 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-16 h-16 bg-white rounded-full animate-bounce"></div>
             </div>
-            <div className="w-24 h-1.5 bg-white mx-auto rounded"></div>
+            <div className="w-24 h-1.5 bg-white mx-auto rounded animate-pulse"></div>
           </div>
-          
+
           <form onSubmit={handleStartChat} className="space-y-6">
             <Input
               type="text"
@@ -52,8 +52,8 @@ export default function Chat() {
               autoFocus
               data-testid="input-username"
             />
-            
-            <Button 
+
+            <Button
               type="submit"
               className="w-80 bg-white text-black hover:bg-gray-200 text-lg py-3"
               disabled={tempName.trim().length < 2}
