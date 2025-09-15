@@ -134,7 +134,9 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
     if (!trimmedMessage || isSending) return;
 
     // Detener cualquier audio en reproducción
-    window.speechSynthesis.cancel();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     // Pausar todos los elementos de audio
     document.querySelectorAll('audio').forEach(audio => {
       audio.pause();
