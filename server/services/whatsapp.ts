@@ -143,21 +143,21 @@ class WhatsAppService {
         const contact = await message.getContact();
         const chat = await message.getChat();
 
-        // Solo responder en chats privados (no grupos)
-        if (!chat.isGroup) {
-          console.log(`Mensaje recibido de ${contact.name || contact.pushname}: ${message.body}`);
+        // Responder tanto en chats privados como en grupos
+        const userName = contact.name || contact.pushname || 'Usuario';
+        const chatType = chat.isGroup ? 'grupo' : 'privado';
+        console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
 
-          // Generar respuesta de IA
-          const aiResponse = await generateChatResponse(
-            message.body, 
-            contact.name || contact.pushname || 'Usuario',
-            this.customPrompt
-          );
+        // Generar respuesta de IA
+        const aiResponse = await generateChatResponse(
+          message.body, 
+          userName,
+          this.customPrompt
+        );
 
-          // Enviar respuesta
-          await message.reply(aiResponse);
-          console.log(`Respuesta enviada: ${aiResponse.substring(0, 50)}...`);
-        }
+        // Enviar respuesta
+        await message.reply(aiResponse);
+        console.log(`Respuesta enviada en ${chatType}: ${aiResponse.substring(0, 50)}...`);
       } catch (error) {
         console.error('Error procesando mensaje:', error);
       }
