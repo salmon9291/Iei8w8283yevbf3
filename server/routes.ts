@@ -32,16 +32,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Obtener historial de conversación ANTES de guardar el nuevo mensaje
       const conversationHistory = await storage.getMessages(username);
       
-      // Obtener configuración para prompt personalizado
+      // Obtener configuración para prompt personalizado y API key
       const settings = await storage.getSettings();
       const customPrompt = settings.customPrompt || undefined;
+      const apiKey = settings.geminiApiKey || undefined;
 
       // Generate AI response con historial completo (sin duplicar el mensaje actual)
       const aiResponse = await generateChatResponse(
         content, 
         username, 
         customPrompt,
-        conversationHistory
+        conversationHistory,
+        apiKey
       );
 
       // Ahora guardamos el mensaje del usuario y la respuesta
@@ -161,6 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const updateSettingsSchema = z.object({
     enableGroupMessages: z.string().optional(),
     customPrompt: z.string().optional(),
+    geminiApiKey: z.string().optional(),
   });
 
   app.post("/api/settings", async (req, res) => {

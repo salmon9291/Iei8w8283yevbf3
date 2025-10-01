@@ -6,7 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 //   - do not change this unless explicitly requested by the user
 
 // This API key is from Gemini Developer API Key, not vertex AI API Key
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const defaultAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -17,8 +17,11 @@ export async function generateChatResponse(
   message: string, 
   username: string, 
   customPrompt?: string,
-  conversationHistory?: Array<{ sender: string; content: string }>
+  conversationHistory?: Array<{ sender: string; content: string }>,
+  apiKey?: string
 ): Promise<string> {
+  // Usar API key personalizada si se proporciona, sino usar la por defecto
+  const ai = apiKey ? new GoogleGenAI({ apiKey }) : defaultAi;
   try {
     // Obtener la fecha actual
     const now = new Date();

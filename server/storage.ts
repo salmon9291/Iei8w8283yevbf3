@@ -30,6 +30,7 @@ export class MemStorage implements IStorage {
       id: 'default',
       enableGroupMessages: 'false',
       customPrompt: null,
+      geminiApiKey: null,
     };
     this.usersFilePath = path.join(process.cwd(), "data", "users.json");
     this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");

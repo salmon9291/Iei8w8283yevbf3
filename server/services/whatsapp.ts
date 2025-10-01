@@ -151,7 +151,7 @@ class WhatsAppService {
         if (chat.isGroup) {
           const settings = await storage.getSettings();
           const enableGroupMessages = settings?.enableGroupMessages === 'true';
-          
+
           // Si los mensajes de grupo están deshabilitados, no responder
           if (!enableGroupMessages) {
             console.log('Mensajes de grupo deshabilitados, ignorando mensaje');
@@ -164,16 +164,16 @@ class WhatsAppService {
             // Verificar si el mensaje menciona al bot
             const mentionedIds = await message.getMentions();
             console.log('Menciones detectadas:', mentionedIds?.length || 0);
-            
+
             if (mentionedIds && mentionedIds.length > 0 && this.client?.info?.wid) {
               const botId = this.client.info.wid._serialized;
               console.log('Bot ID:', botId);
-              
+
               const isMentioned = mentionedIds.some((mention: any) => {
                 console.log('Comparando con mención:', mention.id._serialized);
                 return mention.id._serialized === botId;
               });
-              
+
               if (isMentioned) {
                 console.log('Bot fue mencionado, respondiendo');
                 shouldRespond = true;
@@ -184,7 +184,7 @@ class WhatsAppService {
             if (!shouldRespond && message.hasQuotedMsg) {
               const quotedMsg = await message.getQuotedMessage();
               console.log('Mensaje citado fromMe:', quotedMsg?.fromMe);
-              
+
               if (quotedMsg && quotedMsg.fromMe) {
                 console.log('Mensaje es respuesta al bot, respondiendo');
                 shouldRespond = true;
@@ -215,7 +215,7 @@ class WhatsAppService {
 
         // Obtener configuración para prompt personalizado
         const settings = await storage.getSettings();
-        
+
         // Get current date for context
         const now = new Date();
         const dateStr = now.toLocaleDateString('es-ES', { 
@@ -225,18 +225,16 @@ class WhatsAppService {
           day: 'numeric' 
         });
 
-        // Generate response using Gemini
-        const customPrompt = settings?.customPrompt || undefined;
-        const contextualPrompt = customPrompt ? 
-          `${customPrompt}\n\nFecha actual: ${dateStr}` : 
-          undefined;
+        // Obtener API key de settings
+        const apiKey = settings.geminiApiKey || undefined;
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
           message.body, 
           userName,
-          contextualPrompt,
-          conversationHistory
+          this.customPrompt || undefined,
+          conversationHistory,
+          apiKey
         );
 
         // Solo guardar el mensaje del usuario si NO está ya en el historial
