@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Save, RotateCcw, ArrowLeft } from "lucide-react";
+import { Settings as SettingsIcon, Save, RotateCcw, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 
 const DEFAULT_PROMPT = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "{username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
@@ -77,7 +77,7 @@ export default function Settings() {
             </Button>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Settings className="w-8 h-8" />
+            <SettingsIcon className="w-8 h-8" />
             Configuración
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
