@@ -63,7 +63,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WhatsApp endpoints
   app.post("/api/whatsapp/initialize", async (req, res) => {
     try {
-      await whatsappService.initialize();
+      const { usePairingCode, phoneNumber } = req.body;
+      await whatsappService.initialize(usePairingCode, phoneNumber);
       res.json({ message: "WhatsApp inicializando..." });
     } catch (error) {
       console.error("Error inicializando WhatsApp:", error);
@@ -82,6 +83,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error obteniendo QR:", error);
       res.status(500).json({ error: "Error obteniendo QR Code" });
+    }
+  });
+
+  app.get("/api/whatsapp/pairing-code", async (req, res) => {
+    try {
+      const pairingCode = whatsappService.getPairingCode();
+      if (!pairingCode) {
+        res.status(404).json({ error: "Código de emparejamiento no disponible" });
+        return;
+      }
+      res.json({ pairingCode });
+    } catch (error) {
+      console.error("Error obteniendo código de emparejamiento:", error);
+      res.status(500).json({ error: "Error obteniendo código de emparejamiento" });
     }
   });
 
