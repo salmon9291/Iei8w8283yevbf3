@@ -136,6 +136,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Prompt management routes
+  app.get("/api/whatsapp/prompt", async (req, res) => {
+    try {
+      const prompt = whatsappService.getCustomPrompt();
+      res.json({ prompt });
+    } catch (error) {
+      console.error("Error obteniendo prompt:", error);
+      res.status(500).json({ error: "Error obteniendo prompt" });
+    }
+  });
+
+  const promptSchema = z.object({
+    prompt: z.string().min(1),
+  });
+
+  app.post("/api/whatsapp/prompt", async (req, res) => {
+    try {
+      const { prompt } = promptSchema.parse(req.body);
+      whatsappService.setCustomPrompt(prompt);
+      res.json({ message: "Prompt actualizado exitosamente" });
+    } catch (error) {
+      console.error("Error actualizando prompt:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Datos de prompt inválidos" });
+      } else {
+        res.status(500).json({ error: "Error actualizando prompt" });
+      }
+    }
+  });
+
   // Clear messages for a user
   app.delete("/api/messages/:username", async (req, res) => {
     try {

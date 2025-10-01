@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Smartphone, QrCode, CheckCircle, XCircle, Key } from "lucide-react";
+import { Loader2, Smartphone, QrCode, CheckCircle, XCircle, Key, Settings } from "lucide-react";
+import { Link } from "wouter";
 
 interface WhatsAppStatus {
   isReady: boolean;
@@ -238,6 +239,15 @@ export function WhatsAppPanel() {
                 ✅ WhatsApp conectado exitosamente. La IA ahora responderá automáticamente a tus mensajes.
               </p>
             </div>
+            <Link href="/settings">
+              <Button 
+                variant="secondary"
+                className="w-full mb-2"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Configurar IA
+              </Button>
+            </Link>
             <Button 
               onClick={disconnectWhatsApp} 
               variant="outline"

@@ -16,6 +16,7 @@ class WhatsAppService {
   private isConnecting: boolean = false;
   private isInitialized: boolean = false;
   private usePairingCode: boolean = false;
+  private customPrompt: string = '';
 
   constructor() {}
 
@@ -149,7 +150,8 @@ class WhatsAppService {
           // Generar respuesta de IA
           const aiResponse = await generateChatResponse(
             message.body, 
-            contact.name || contact.pushname || 'Usuario'
+            contact.name || contact.pushname || 'Usuario',
+            this.customPrompt
           );
 
           // Enviar respuesta
@@ -264,6 +266,14 @@ class WhatsAppService {
       console.error('Error enviando mensaje:', error);
       throw error;
     }
+  }
+
+  setCustomPrompt(prompt: string) {
+    this.customPrompt = prompt;
+  }
+
+  getCustomPrompt(): string {
+    return this.customPrompt;
   }
 }
 

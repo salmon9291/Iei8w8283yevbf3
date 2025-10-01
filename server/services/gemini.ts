@@ -8,9 +8,13 @@ import { GoogleGenAI } from "@google/genai";
 // This API key is from Gemini Developer API Key, not vertex AI API Key
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-export async function generateChatResponse(message: string, username: string): Promise<string> {
+export async function generateChatResponse(message: string, username: string, customPrompt?: string): Promise<string> {
   try {
-    const prompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.
+    const defaultPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
+    
+    const systemPrompt = customPrompt ? customPrompt.replace('{username}', username) : defaultPrompt;
+    
+    const prompt = `${systemPrompt}
 
 Usuario: ${message}`;
 
