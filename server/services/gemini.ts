@@ -8,19 +8,57 @@ import { GoogleGenAI } from "@google/genai";
 // This API key is from Gemini Developer API Key, not vertex AI API Key
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-export async function generateChatResponse(message: string, username: string, customPrompt?: string): Promise<string> {
+export interface ChatMessage {
+  role: 'user' | 'model';
+  parts: string;
+}
+
+export async function generateChatResponse(
+  message: string, 
+  username: string, 
+  customPrompt?: string,
+  conversationHistory?: Array<{ sender: string; content: string }>
+): Promise<string> {
   try {
     const defaultPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
     
     const systemPrompt = customPrompt ? customPrompt.replace('{username}', username) : defaultPrompt;
     
-    const prompt = `${systemPrompt}
-
-Usuario: ${message}`;
+    // Construir historial de conversación para Gemini
+    const history: ChatMessage[] = [];
+    
+    // Incluir el prompt del sistema como primer mensaje
+    history.push({
+      role: 'user',
+      parts: `[INSTRUCCIONES DEL SISTEMA: ${systemPrompt}]`
+    });
+    
+    history.push({
+      role: 'model',
+      parts: 'Entendido. Estoy listo para ayudarte siguiendo estas instrucciones.'
+    });
+    
+    if (conversationHistory && conversationHistory.length > 0) {
+      conversationHistory.forEach((msg) => {
+        history.push({
+          role: msg.sender === 'user' ? 'user' : 'model',
+          parts: msg.content
+        });
+      });
+    }
+    
+    // Agregar el mensaje actual
+    history.push({
+      role: 'user',
+      parts: message
+    });
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: prompt,
+      contents: history.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.parts }]
+      })),
     });
 
     return response.text || "Lo siento, no pude generar una respuesta en este momento.";

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Smartphone, QrCode, CheckCircle, XCircle, Key, Settings } from "lucide-react";
+import { Loader2, Smartphone, QrCode, CheckCircle, XCircle, Key, Settings, Lock } from "lucide-react";
 import { Link } from "wouter";
 
 interface WhatsAppStatus {
@@ -17,7 +17,12 @@ interface WhatsAppStatus {
   usePairingCode: boolean;
 }
 
+const ADMIN_PASSWORD = "SWzv95VBf6";
+
 export function WhatsAppPanel() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
   const [status, setStatus] = useState<WhatsAppStatus>({
     isReady: false,
     isConnecting: false,
@@ -115,8 +120,30 @@ export function WhatsAppPanel() {
   };
 
   useEffect(() => {
-    checkStatus();
+    // Check if already authenticated in session
+    const authStatus = sessionStorage.getItem('whatsapp_admin_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkStatus();
+    }
+  }, [isAuthenticated]);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('whatsapp_admin_auth', 'true');
+      setPasswordError("");
+      setPasswordInput("");
+    } else {
+      setPasswordError("Contraseña incorrecta");
+    }
+  };
 
   const getStatusBadge = () => {
     if (status.isReady) {
@@ -127,6 +154,52 @@ export function WhatsAppPanel() {
       return <Badge variant="secondary"><XCircle className="w-3 h-3 mr-1" />Desconectado</Badge>;
     }
   };
+
+  // Show password screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            Acceso Administrativo
+          </CardTitle>
+          <CardDescription>
+            Ingresa la contraseña para acceder al panel de WhatsApp
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="admin-password">Contraseña de Administrador</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  setPasswordError("");
+                }}
+                placeholder="Ingresa la contraseña"
+                data-testid="input-admin-password"
+              />
+              {passwordError && (
+                <p className="text-sm text-red-500">{passwordError}</p>
+              )}
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={!passwordInput}
+              data-testid="button-admin-login"
+            >
+              Acceder
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">

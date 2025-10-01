@@ -29,17 +29,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { content, username } = chatRequestSchema.parse(req.body);
 
-      // Save user message
+      // Obtener historial de conversación ANTES de guardar el nuevo mensaje
+      const conversationHistory = await storage.getMessages(username);
+      
+      // Obtener configuración para prompt personalizado
+      const settings = await storage.getSettings();
+      const customPrompt = settings.customPrompt || undefined;
+
+      // Generate AI response con historial completo (sin duplicar el mensaje actual)
+      const aiResponse = await generateChatResponse(
+        content, 
+        username, 
+        customPrompt,
+        conversationHistory
+      );
+
+      // Ahora guardamos el mensaje del usuario y la respuesta
       const userMessage = await storage.createMessage({
         content,
         sender: "user",
         username,
       });
 
-      // Generate AI response
-      const aiResponse = await generateChatResponse(content, username);
-
-      // Save AI message
       const aiMessage = await storage.createMessage({
         content: aiResponse,
         sender: "assistant",

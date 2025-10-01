@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { generateChatResponse } from './gemini';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { storage } from '../storage';
 
 const execAsync = promisify(exec);
 const { Client, LocalAuth, MessageMedia } = whatsappWeb;
@@ -144,14 +145,45 @@ class WhatsAppService {
         // Responder tanto en chats privados como en grupos
         const userName = contact.name || contact.pushname || 'Usuario';
         const chatType = chat.isGroup ? 'grupo' : 'privado';
+        
+        // Usar número de teléfono o ID de chat como identificador único
+        const userId = `whatsapp_${contact.number || chat.id._serialized}`;
+        
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
 
-        // Generar respuesta de IA
+        // Obtener historial de conversación
+        const conversationHistory = await storage.getMessages(userId);
+        
+        // Verificar si el mensaje ya fue guardado para evitar duplicación
+        const lastMsg = conversationHistory[conversationHistory.length - 1];
+        const messageAlreadySaved = lastMsg && lastMsg.sender === 'user' && lastMsg.content === message.body;
+        
+        // Obtener configuración para prompt personalizado
+        const settings = await storage.getSettings();
+        const customPrompt = settings.customPrompt || this.customPrompt;
+
+        // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
           message.body, 
           userName,
-          this.customPrompt
+          customPrompt,
+          conversationHistory
         );
+
+        // Solo guardar el mensaje del usuario si NO está ya en el historial
+        if (!messageAlreadySaved) {
+          await storage.createMessage({
+            content: message.body,
+            sender: 'user',
+            username: userId
+          });
+        }
+
+        await storage.createMessage({
+          content: aiResponse,
+          sender: 'assistant',
+          username: userId
+        });
 
         // Enviar respuesta
         await message.reply(aiResponse);
