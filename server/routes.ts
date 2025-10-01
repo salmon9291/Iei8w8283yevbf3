@@ -149,6 +149,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const sendManualMessageSchema = z.object({
+    to: z.string().min(1),
+    message: z.string().min(1),
+    saveToHistory: z.boolean().optional().default(true),
+  });
+
+  app.post("/api/whatsapp/send-manual", async (req, res) => {
+    try {
+      const { to, message, saveToHistory } = sendManualMessageSchema.parse(req.body);
+      
+      // Enviar el mensaje
+      await whatsappService.sendMessage(to, message);
+      
+      // Guardar en el historial si se especifica
+      if (saveToHistory) {
+        await storage.createMessage({
+          content: message,
+          sender: 'assistant',
+          username: to,
+        });
+      }
+      
+      res.json({ message: "Mensaje manual enviado exitosamente" });
+    } catch (error) {
+      console.error("Error enviando mensaje manual:", error);
+      res.status(500).json({ error: "Error enviando mensaje manual" });
+    }
+  });
+
   // Settings routes
   app.get("/api/settings", async (req, res) => {
     try {

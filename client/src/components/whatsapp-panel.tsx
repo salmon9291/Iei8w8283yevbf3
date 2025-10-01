@@ -44,6 +44,53 @@ export function WhatsAppPanel() {
   const [enableGroupMessages, setEnableGroupMessages] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [manualMessage, setManualMessage] = useState('');
+  const [manualRecipient, setManualRecipient] = useState('');
+  const [isSendingManual, setIsSendingManual] = useState(false);
+
+  const handleSendManualMessage = async () => {
+    if (!manualMessage.trim() || !manualRecipient.trim()) {
+      toast({
+        title: "Campos requeridos",
+        description: "Debes ingresar un destinatario y un mensaje.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingManual(true);
+    try {
+      const response = await fetch('/api/whatsapp/send-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: manualRecipient,
+          message: manualMessage,
+          saveToHistory: true,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Mensaje enviado",
+          description: "El mensaje se envió exitosamente como la IA.",
+        });
+        setManualMessage('');
+        setManualRecipient('');
+      } else {
+        throw new Error("Error al enviar el mensaje");
+      }
+    } catch (error) {
+      console.error("Error sending manual message:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingManual(false);
+    }
+  };
 
   const checkStatus = async () => {
     try {
@@ -268,9 +315,10 @@ export function WhatsAppPanel() {
 
       <CardContent>
         <Tabs defaultValue="connection" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="connection">Conexión</TabsTrigger>
             <TabsTrigger value="settings">Configuración</TabsTrigger>
+            <TabsTrigger value="manual">Modo Manual</TabsTrigger>
           </TabsList>
           <TabsContent value="connection">
             {!status.isReady && !status.isConnecting && (
@@ -447,6 +495,63 @@ export function WhatsAppPanel() {
                   {isLoadingSettings ? 'Guardando...' : 'Guardar Configuración'}
                 </Button>
               </div>
+          </TabsContent>
+          <TabsContent value="manual">
+            <div className="space-y-4">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Modo Manual:</strong> Envía mensajes directamente como si fueras la IA. Los mensajes se guardan en el historial.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="manual-recipient">Destinatario</Label>
+                <Input
+                  id="manual-recipient"
+                  type="text"
+                  placeholder="5213532485503@c.us"
+                  value={manualRecipient}
+                  onChange={(e) => setManualRecipient(e.target.value)}
+                  disabled={!status.isReady}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Formato: número@c.us para chats privados o ID del grupo
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="manual-message">Mensaje</Label>
+                <Textarea
+                  id="manual-message"
+                  placeholder="Escribe el mensaje que quieres enviar como la IA..."
+                  value={manualMessage}
+                  onChange={(e) => setManualMessage(e.target.value)}
+                  rows={4}
+                  disabled={!status.isReady}
+                />
+              </div>
+
+              <Button 
+                onClick={handleSendManualMessage}
+                disabled={isSendingManual || !status.isReady || !manualMessage.trim() || !manualRecipient.trim()}
+                className="w-full"
+              >
+                {isSendingManual ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  'Enviar como IA'
+                )}
+              </Button>
+
+              {!status.isReady && (
+                <p className="text-sm text-yellow-600 text-center">
+                  Debes conectar WhatsApp primero para usar esta función
+                </p>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
