@@ -152,8 +152,10 @@ class WhatsAppService {
           const settings = await storage.getSettings();
           const enableGroupMessages = settings?.enableGroupMessages === 'true';
           
+          // Si los mensajes de grupo están deshabilitados, no responder
           if (!enableGroupMessages) {
-            return; // No responder en grupos si está deshabilitado
+            console.log('Mensajes de grupo deshabilitados, ignorando mensaje');
+            return;
           }
 
           let shouldRespond = false;
@@ -161,11 +163,19 @@ class WhatsAppService {
           try {
             // Verificar si el mensaje menciona al bot
             const mentionedIds = await message.getMentions();
+            console.log('Menciones detectadas:', mentionedIds?.length || 0);
+            
             if (mentionedIds && mentionedIds.length > 0 && this.client?.info?.wid) {
-              const isMentioned = mentionedIds.some((mention: any) => 
-                mention.id._serialized === this.client!.info.wid._serialized
-              );
+              const botId = this.client.info.wid._serialized;
+              console.log('Bot ID:', botId);
+              
+              const isMentioned = mentionedIds.some((mention: any) => {
+                console.log('Comparando con mención:', mention.id._serialized);
+                return mention.id._serialized === botId;
+              });
+              
               if (isMentioned) {
+                console.log('Bot fue mencionado, respondiendo');
                 shouldRespond = true;
               }
             }
@@ -173,7 +183,10 @@ class WhatsAppService {
             // Verificar si el mensaje es una respuesta a un mensaje del bot
             if (!shouldRespond && message.hasQuotedMsg) {
               const quotedMsg = await message.getQuotedMessage();
+              console.log('Mensaje citado fromMe:', quotedMsg?.fromMe);
+              
               if (quotedMsg && quotedMsg.fromMe) {
+                console.log('Mensaje es respuesta al bot, respondiendo');
                 shouldRespond = true;
               }
             }
@@ -183,6 +196,7 @@ class WhatsAppService {
 
           // Si no es mencionado ni respuesta al bot, ignorar
           if (!shouldRespond) {
+            console.log('Bot no fue mencionado ni respondido, ignorando mensaje en grupo');
             return;
           }
         }
