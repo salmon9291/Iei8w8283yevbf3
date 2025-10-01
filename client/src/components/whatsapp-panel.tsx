@@ -120,14 +120,6 @@ export function WhatsAppPanel() {
   };
 
   useEffect(() => {
-    // Check if already authenticated in session
-    const authStatus = sessionStorage.getItem('whatsapp_admin_auth');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  useEffect(() => {
     if (isAuthenticated) {
       checkStatus();
     }
@@ -137,11 +129,11 @@ export function WhatsAppPanel() {
     e.preventDefault();
     if (passwordInput === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
-      sessionStorage.setItem('whatsapp_admin_auth', 'true');
       setPasswordError("");
       setPasswordInput("");
     } else {
       setPasswordError("Contraseña incorrecta");
+      setPasswordInput("");
     }
   };
 

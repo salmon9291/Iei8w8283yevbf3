@@ -160,9 +160,8 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto p-4">
       <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 mb-6">
+          <TabsTrigger value="chat">Chat IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="space-y-6">
