@@ -1,4 +1,3 @@
-
 import whatsappWeb from 'whatsapp-web.js';
 import QRCode from 'qrcode';
 import { generateChatResponse } from './gemini';
@@ -33,7 +32,7 @@ class WhatsAppService {
 
   private async initializeClient() {
     if (this.isInitialized) return;
-    
+
     const chromiumPath = await this.getChromiumPath();
     console.log('Chromium path:', chromiumPath || 'No encontrado, usando default');
 
@@ -80,7 +79,7 @@ class WhatsAppService {
 
   private setupEventHandlers() {
     if (!this.client) return;
-    
+
     this.client.on('loading_screen', (percent: any, message: any) => {
       console.log('Cargando WhatsApp Web...', percent, message);
     });
@@ -123,7 +122,7 @@ class WhatsAppService {
       this.isConnecting = false;
       this.qrCode = '';
       this.pairingCode = '';
-      
+
       // Reset client state for potential reconnection
       this.client = null;
       this.isInitialized = false;
@@ -145,28 +144,42 @@ class WhatsAppService {
         // Responder tanto en chats privados como en grupos
         const userName = contact.name || contact.pushname || 'Usuario';
         const chatType = chat.isGroup ? 'grupo' : 'privado';
-        
+
         // Usar número de teléfono o ID de chat como identificador único
         const userId = `whatsapp_${contact.number || chat.id._serialized}`;
-        
+
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
 
         // Obtener historial de conversación
         const conversationHistory = await storage.getMessages(userId);
-        
+
         // Verificar si el mensaje ya fue guardado para evitar duplicación
         const lastMsg = conversationHistory[conversationHistory.length - 1];
         const messageAlreadySaved = lastMsg && lastMsg.sender === 'user' && lastMsg.content === message.body;
-        
+
         // Obtener configuración para prompt personalizado
         const settings = await storage.getSettings();
-        const customPrompt = settings.customPrompt || this.customPrompt;
+        
+        // Get current date for context
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        // Generate response using Gemini
+        const customPrompt = settings?.customPrompt || undefined;
+        const contextualPrompt = customPrompt ? 
+          `${customPrompt}\n\nFecha actual: ${dateStr}` : 
+          undefined;
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
           message.body, 
           userName,
-          customPrompt,
+          contextualPrompt,
           conversationHistory
         );
 
@@ -203,42 +216,42 @@ class WhatsAppService {
     try {
       this.isConnecting = true;
       this.usePairingCode = usePairingCode;
-      
+
       if (usePairingCode && !phoneNumber) {
         throw new Error('Se requiere número de teléfono para el método de código de emparejamiento');
       }
-      
+
       console.log(`→ Paso 1: Inicializando cliente de WhatsApp con ${usePairingCode ? 'código de emparejamiento' : 'QR'}...`);
-      
+
       await this.initializeClient();
       console.log('→ Paso 2: Cliente creado, inicializando conexión...');
-      
+
       if (!this.client) {
         throw new Error('No se pudo inicializar el cliente de WhatsApp');
       }
-      
+
       console.log('→ Paso 3: Llamando a client.initialize()...');
-      
+
       // Set a timeout for initialization
       const initPromise = this.client.initialize();
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout: WhatsApp initialization took too long')), 120000);
       });
-      
+
       await Promise.race([initPromise, timeoutPromise]);
-      
+
       // Si usamos código de emparejamiento, solicitar el código
       if (usePairingCode && phoneNumber) {
         console.log('→ Paso 4: Solicitando código de emparejamiento...');
         await this.client.requestPairingCode(phoneNumber);
       }
-      
+
       console.log('→ Paso 4: client.initialize() completado, esperando eventos...');
     } catch (error: any) {
       console.error('✗ Error inicializando WhatsApp:', error?.message || error);
       console.error('Stack trace:', error?.stack);
       this.isConnecting = false;
-      
+
       // Clean up client if initialization failed
       if (this.client) {
         try {
@@ -249,7 +262,7 @@ class WhatsAppService {
         this.client = null;
         this.isInitialized = false;
       }
-      
+
       throw error;
     }
   }

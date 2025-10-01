@@ -20,9 +20,24 @@ export async function generateChatResponse(
   conversationHistory?: Array<{ sender: string; content: string }>
 ): Promise<string> {
   try {
-    const defaultPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
+    // Obtener la fecha actual
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    const timeStr = now.toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
     
-    const systemPrompt = customPrompt ? customPrompt.replace('{username}', username) : defaultPrompt;
+    const defaultPrompt = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "${username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.
+
+INFORMACIÓN IMPORTANTE: Hoy es ${dateStr} y la hora actual es ${timeStr}. Usa esta información cuando te pregunten sobre fechas, días de la semana o la hora actual.`;
+    
+    const systemPrompt = customPrompt ? `${customPrompt.replace('{username}', username)}\n\nINFORMACIÓN IMPORTANTE: Hoy es ${dateStr} y la hora actual es ${timeStr}. Usa esta información cuando te pregunten sobre fechas, días de la semana o la hora actual.` : defaultPrompt;
     
     // Construir historial de conversación para Gemini
     const history: ChatMessage[] = [];
