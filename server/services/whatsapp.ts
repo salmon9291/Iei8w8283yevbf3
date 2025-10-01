@@ -1,8 +1,9 @@
 
-import pkg from 'whatsapp-web.js';
-const { Client, LocalAuth, MessageMedia } = pkg;
+import whatsappWeb from 'whatsapp-web.js';
 import QRCode from 'qrcode';
 import { generateChatResponse } from './gemini';
+
+const { Client, LocalAuth, MessageMedia } = whatsappWeb;
 
 class WhatsAppService {
   private client: Client;
@@ -17,7 +18,7 @@ class WhatsAppService {
       }),
       puppeteer: {
         headless: true,
-        executablePath: '/nix/store/*/bin/chromium',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
