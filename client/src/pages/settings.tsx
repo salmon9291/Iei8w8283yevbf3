@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Settings as SettingsIcon, Save, RotateCcw, ArrowLeft } from "lucide-react";
+import { Settings as SettingsIcon, Save, RotateCcw, ArrowLeft, Users } from "lucide-react";
 import { Link } from "wouter";
 
 const DEFAULT_PROMPT = `Eres un asistente de IA que SIEMPRE responde en español. Tu nombre es Asistente y te diriges al usuario como "{username}". Siempre menciona su nombre al menos una vez en cada respuesta de manera natural y amigable. Sin importar el idioma en que te escriban, siempre debes responder en español de manera natural y fluida.`;
 
 export default function Settings() {
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
+  const [enableGroupMessages, setEnableGroupMessages] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -21,40 +23,44 @@ export default function Settings() {
 
   const loadCurrentPrompt = async () => {
     try {
-      const response = await fetch("/api/whatsapp/prompt");
+      const response = await fetch("/api/settings");
       if (response.ok) {
         const data = await response.json();
-        setPrompt(data.prompt || DEFAULT_PROMPT);
+        setPrompt(data.customPrompt || DEFAULT_PROMPT);
+        setEnableGroupMessages(data.enableGroupMessages === 'true');
       }
     } catch (error) {
-      console.error("Error loading prompt:", error);
+      console.error("Error loading settings:", error);
     }
   };
 
   const savePrompt = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/whatsapp/prompt", {
+      const response = await fetch("/api/settings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ 
+          customPrompt: prompt,
+          enableGroupMessages: enableGroupMessages ? 'true' : 'false'
+        }),
       });
 
       if (response.ok) {
         toast({
-          title: "Prompt guardado",
-          description: "El prompt de la IA ha sido actualizado exitosamente.",
+          title: "Configuración guardada",
+          description: "La configuración ha sido actualizada exitosamente.",
         });
       } else {
-        throw new Error("Error al guardar el prompt");
+        throw new Error("Error al guardar la configuración");
       }
     } catch (error) {
-      console.error("Error saving prompt:", error);
+      console.error("Error saving settings:", error);
       toast({
         title: "Error",
-        description: "No se pudo guardar el prompt. Inténtalo de nuevo.",
+        description: "No se pudo guardar la configuración. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -64,6 +70,7 @@ export default function Settings() {
 
   const resetToDefault = () => {
     setPrompt(DEFAULT_PROMPT);
+    setEnableGroupMessages(false);
   };
 
   return (
@@ -85,6 +92,36 @@ export default function Settings() {
           </p>
         </div>
 
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              WhatsApp Groups
+            </CardTitle>
+            <CardDescription>
+              Controla si la IA debe responder en grupos de WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="group-messages" className="text-base font-medium" data-testid="label-group-messages">
+                  Responder en Grupos
+                </Label>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Cuando está activado, la IA responderá a mensajes en grupos de WhatsApp
+                </p>
+              </div>
+              <Switch
+                id="group-messages"
+                checked={enableGroupMessages}
+                onCheckedChange={setEnableGroupMessages}
+                data-testid="switch-group-messages"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Prompt de la IA</CardTitle>
@@ -98,6 +135,7 @@ export default function Settings() {
               <Label htmlFor="prompt">Prompt del Sistema</Label>
               <Textarea
                 id="prompt"
+                data-testid="textarea-prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Escribe el prompt para la IA..."
@@ -113,15 +151,17 @@ export default function Settings() {
                 onClick={savePrompt} 
                 disabled={isLoading || !prompt.trim()}
                 className="flex items-center gap-2"
+                data-testid="button-save-settings"
               >
                 <Save className="w-4 h-4" />
-                {isLoading ? "Guardando..." : "Guardar Prompt"}
+                {isLoading ? "Guardando..." : "Guardar Configuración"}
               </Button>
               
               <Button 
                 variant="outline" 
                 onClick={resetToDefault}
                 className="flex items-center gap-2"
+                data-testid="button-reset-settings"
               >
                 <RotateCcw className="w-4 h-4" />
                 Restaurar por Defecto

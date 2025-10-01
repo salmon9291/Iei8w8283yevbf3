@@ -136,11 +136,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Prompt management routes
+  // Settings routes
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error obteniendo settings:", error);
+      res.status(500).json({ error: "Error obteniendo configuración" });
+    }
+  });
+
+  const updateSettingsSchema = z.object({
+    enableGroupMessages: z.string().optional(),
+    customPrompt: z.string().optional(),
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const settingsUpdate = updateSettingsSchema.parse(req.body);
+      const settings = await storage.updateSettings(settingsUpdate);
+      
+      // Actualizar prompt en el servicio de WhatsApp si cambió
+      if (settingsUpdate.customPrompt !== undefined) {
+        whatsappService.setCustomPrompt(settingsUpdate.customPrompt);
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error actualizando settings:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Datos de configuración inválidos" });
+      } else {
+        res.status(500).json({ error: "Error actualizando configuración" });
+      }
+    }
+  });
+
+  // Backward compatibility - Prompt management routes
   app.get("/api/whatsapp/prompt", async (req, res) => {
     try {
-      const prompt = whatsappService.getCustomPrompt();
-      res.json({ prompt });
+      const settings = await storage.getSettings();
+      res.json({ prompt: settings.customPrompt || whatsappService.getCustomPrompt() });
     } catch (error) {
       console.error("Error obteniendo prompt:", error);
       res.status(500).json({ error: "Error obteniendo prompt" });
@@ -154,6 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/whatsapp/prompt", async (req, res) => {
     try {
       const { prompt } = promptSchema.parse(req.body);
+      await storage.updateSettings({ customPrompt: prompt });
       whatsappService.setCustomPrompt(prompt);
       res.json({ message: "Prompt actualizado exitosamente" });
     } catch (error) {

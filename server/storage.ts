@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
+import { type User, type InsertUser, type Message, type InsertMessage, type Settings, type InsertSettings } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
@@ -10,20 +10,30 @@ export interface IStorage {
   getMessages(username: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   clearMessages(username: string): Promise<void>;
+  getSettings(): Promise<Settings>;
+  updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private messages: Map<number, Message>;
+  private settings: Settings;
   private messageCounter: number = 1;
   private usersFilePath: string;
   private messagesFilePath: string;
+  private settingsFilePath: string;
 
   constructor() {
     this.users = new Map();
     this.messages = new Map();
+    this.settings = {
+      id: 'default',
+      enableGroupMessages: 'false',
+      customPrompt: null,
+    };
     this.usersFilePath = path.join(process.cwd(), "data", "users.json");
     this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");
+    this.settingsFilePath = path.join(process.cwd(), "data", "settings.json");
     
     // Ensure data directory exists
     const dataDir = path.dirname(this.usersFilePath);
@@ -46,6 +56,11 @@ export class MemStorage implements IStorage {
         this.messages = new Map(messagesData);
         this.messageCounter = Math.max(...Array.from(this.messages.keys()), 0) + 1;
       }
+      
+      if (fs.existsSync(this.settingsFilePath)) {
+        const settingsData = JSON.parse(fs.readFileSync(this.settingsFilePath, "utf-8"));
+        this.settings = settingsData;
+      }
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -64,6 +79,14 @@ export class MemStorage implements IStorage {
       fs.writeFileSync(this.messagesFilePath, JSON.stringify(Array.from(this.messages.entries())));
     } catch (error) {
       console.error("Error saving messages:", error);
+    }
+  }
+
+  private saveSettings() {
+    try {
+      fs.writeFileSync(this.settingsFilePath, JSON.stringify(this.settings));
+    } catch (error) {
+      console.error("Error saving settings:", error);
     }
   }
 
@@ -110,6 +133,19 @@ export class MemStorage implements IStorage {
     
     messagesToDelete.forEach(id => this.messages.delete(id));
     this.saveMessages();
+  }
+
+  async getSettings(): Promise<Settings> {
+    return this.settings;
+  }
+
+  async updateSettings(newSettings: Partial<InsertSettings>): Promise<Settings> {
+    this.settings = {
+      ...this.settings,
+      ...newSettings,
+    };
+    this.saveSettings();
+    return this.settings;
   }
 }
 
