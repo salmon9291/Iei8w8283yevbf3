@@ -35,7 +35,7 @@ class WhatsAppService {
 
     const puppeteerConfig: any = {
       headless: true,
-      timeout: 0,
+      timeout: 60000,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -46,7 +46,14 @@ class WhatsAppService {
         '--single-process',
         '--disable-gpu',
         '--disable-web-security',
-        '--disable-features=IsolateOrigins,site-per-process'
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection',
+        '--memory-pressure-off',
+        '--max_old_space_size=4096'
       ]
     };
 
@@ -103,6 +110,13 @@ class WhatsAppService {
       console.log('WhatsApp desconectado:', reason);
       this.isReady = false;
       this.isConnecting = false;
+      this.qrCode = '';
+      
+      // Reset client state for potential reconnection
+      if (reason !== 'NAVIGATION') {
+        this.client = null;
+        this.isInitialized = false;
+      }
     });
 
     this.client.on('change_state', (state: any) => {
@@ -156,12 +170,31 @@ class WhatsAppService {
       }
       
       console.log('→ Paso 3: Llamando a client.initialize()...');
-      await this.client.initialize();
+      
+      // Set a timeout for initialization
+      const initPromise = this.client.initialize();
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: WhatsApp initialization took too long')), 120000);
+      });
+      
+      await Promise.race([initPromise, timeoutPromise]);
       console.log('→ Paso 4: client.initialize() completado, esperando eventos...');
     } catch (error: any) {
       console.error('✗ Error inicializando WhatsApp:', error?.message || error);
       console.error('Stack trace:', error?.stack);
       this.isConnecting = false;
+      
+      // Clean up client if initialization failed
+      if (this.client) {
+        try {
+          await this.client.destroy();
+        } catch (destroyError) {
+          console.error('Error cleaning up client:', destroyError);
+        }
+        this.client = null;
+        this.isInitialized = false;
+      }
+      
       throw error;
     }
   }
