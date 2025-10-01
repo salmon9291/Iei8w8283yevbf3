@@ -225,14 +225,15 @@ class WhatsAppService {
           day: 'numeric' 
         });
 
-        // Obtener API key de settings
+        // Obtener API key y custom prompt de settings
         const apiKey = settings.geminiApiKey || undefined;
+        const customPrompt = settings.customPrompt || undefined;
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
           message.body, 
           userName,
-          this.customPrompt || undefined,
+          customPrompt,
           conversationHistory,
           apiKey
         );
