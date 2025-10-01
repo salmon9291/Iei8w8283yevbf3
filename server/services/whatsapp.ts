@@ -17,6 +17,7 @@ class WhatsAppService {
       }),
       puppeteer: {
         headless: true,
+        executablePath: '/nix/store/*/bin/chromium',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -25,7 +26,12 @@ class WhatsAppService {
           '--no-first-run',
           '--no-zygote',
           '--single-process',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=TranslateUI',
+          '--disable-ipc-flooding-protection'
         ]
       }
     });
