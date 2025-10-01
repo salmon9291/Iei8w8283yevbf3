@@ -156,17 +156,33 @@ class WhatsAppService {
             return; // No responder en grupos si está deshabilitado
           }
 
-          // Verificar si el mensaje menciona al bot
-          const mentionedIds = await message.getMentions();
-          const botInfo = await this.client.getState();
-          const isMentioned = mentionedIds.some((mention: any) => mention.id._serialized === this.client.info.wid._serialized);
-          
-          // Verificar si el mensaje es una respuesta a un mensaje del bot
-          const quotedMsg = await message.getQuotedMessage();
-          const isReplyToBot = quotedMsg && quotedMsg.fromMe;
+          let shouldRespond = false;
+
+          try {
+            // Verificar si el mensaje menciona al bot
+            const mentionedIds = await message.getMentions();
+            if (mentionedIds && mentionedIds.length > 0 && this.client?.info?.wid) {
+              const isMentioned = mentionedIds.some((mention: any) => 
+                mention.id._serialized === this.client!.info.wid._serialized
+              );
+              if (isMentioned) {
+                shouldRespond = true;
+              }
+            }
+
+            // Verificar si el mensaje es una respuesta a un mensaje del bot
+            if (!shouldRespond && message.hasQuotedMsg) {
+              const quotedMsg = await message.getQuotedMessage();
+              if (quotedMsg && quotedMsg.fromMe) {
+                shouldRespond = true;
+              }
+            }
+          } catch (error) {
+            console.error('Error verificando menciones/respuestas:', error);
+          }
 
           // Si no es mencionado ni respuesta al bot, ignorar
-          if (!isMentioned && !isReplyToBot) {
+          if (!shouldRespond) {
             return;
           }
         }
