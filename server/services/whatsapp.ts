@@ -11,11 +11,9 @@ const { Client, LocalAuth, MessageMedia } = whatsappWeb;
 class WhatsAppService {
   private client: Client | null = null;
   private qrCode: string = '';
-  private pairingCode: string = '';
   private isReady: boolean = false;
   private isConnecting: boolean = false;
   private isInitialized: boolean = false;
-  private usePairingCode: boolean = false;
 
   constructor() {}
 
@@ -84,20 +82,13 @@ class WhatsAppService {
     });
 
     this.client.on('qr', async (qr) => {
-      if (!this.usePairingCode) {
-        console.log('✓ QR Code recibido, generando imagen...');
-        try {
-          this.qrCode = await QRCode.toDataURL(qr);
-          console.log('✓ QR Code generado exitosamente, disponible para escanear');
-        } catch (error) {
-          console.error('✗ Error generando QR Code:', error);
-        }
+      console.log('✓ QR Code recibido, generando imagen...');
+      try {
+        this.qrCode = await QRCode.toDataURL(qr);
+        console.log('✓ QR Code generado exitosamente, disponible para escanear');
+      } catch (error) {
+        console.error('✗ Error generando QR Code:', error);
       }
-    });
-
-    this.client.on('pairing_code', (code) => {
-      console.log('✓ Código de emparejamiento recibido:', code);
-      this.pairingCode = code;
     });
 
     this.client.on('ready', () => {
@@ -120,7 +111,6 @@ class WhatsAppService {
       this.isReady = false;
       this.isConnecting = false;
       this.qrCode = '';
-      this.pairingCode = '';
       
       // Reset client state for potential reconnection
       if (reason !== 'NAVIGATION') {
@@ -162,7 +152,7 @@ class WhatsAppService {
     });
   }
 
-  async initialize(usePairingCode: boolean = false, phoneNumber?: string) {
+  async initialize() {
     if (this.isConnecting || this.isReady) {
       console.log('Ya está inicializando o listo');
       return;
@@ -170,13 +160,7 @@ class WhatsAppService {
 
     try {
       this.isConnecting = true;
-      this.usePairingCode = usePairingCode;
-      
-      if (usePairingCode && !phoneNumber) {
-        throw new Error('Se requiere número de teléfono para el método de código de emparejamiento');
-      }
-      
-      console.log(`→ Paso 1: Inicializando cliente de WhatsApp con ${usePairingCode ? 'código de emparejamiento' : 'QR'}...`);
+      console.log('→ Paso 1: Inicializando cliente de WhatsApp...');
       
       await this.initializeClient();
       console.log('→ Paso 2: Cliente creado, inicializando conexión...');
@@ -194,13 +178,6 @@ class WhatsAppService {
       });
       
       await Promise.race([initPromise, timeoutPromise]);
-      
-      // Si usamos código de emparejamiento, solicitar el código
-      if (usePairingCode && phoneNumber) {
-        console.log('→ Paso 4: Solicitando código de emparejamiento...');
-        await this.client.requestPairingCode(phoneNumber);
-      }
-      
       console.log('→ Paso 4: client.initialize() completado, esperando eventos...');
     } catch (error: any) {
       console.error('✗ Error inicializando WhatsApp:', error?.message || error);
@@ -227,8 +204,6 @@ class WhatsAppService {
       await this.client.destroy();
       this.isReady = false;
       this.isConnecting = false;
-      this.qrCode = '';
-      this.pairingCode = '';
       console.log('Cliente WhatsApp desconectado');
     }
   }
@@ -237,17 +212,11 @@ class WhatsAppService {
     return this.qrCode;
   }
 
-  getPairingCode(): string {
-    return this.pairingCode;
-  }
-
-  getStatus(): { isReady: boolean; isConnecting: boolean; hasQR: boolean; hasPairingCode: boolean; usePairingCode: boolean } {
+  getStatus(): { isReady: boolean; isConnecting: boolean; hasQR: boolean } {
     return {
       isReady: this.isReady,
       isConnecting: this.isConnecting,
-      hasQR: !!this.qrCode,
-      hasPairingCode: !!this.pairingCode,
-      usePairingCode: this.usePairingCode
+      hasQR: !!this.qrCode
     };
   }
 

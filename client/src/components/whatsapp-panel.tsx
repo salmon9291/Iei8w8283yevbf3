@@ -3,31 +3,21 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, Smartphone, QrCode, CheckCircle, XCircle, Key } from "lucide-react";
+import { Loader2, Smartphone, QrCode, CheckCircle, XCircle } from "lucide-react";
 
 interface WhatsAppStatus {
   isReady: boolean;
   isConnecting: boolean;
   hasQR: boolean;
-  hasPairingCode: boolean;
-  usePairingCode: boolean;
 }
 
 export function WhatsAppPanel() {
   const [status, setStatus] = useState<WhatsAppStatus>({
     isReady: false,
     isConnecting: false,
-    hasQR: false,
-    hasPairingCode: false,
-    usePairingCode: false
+    hasQR: false
   });
   const [qrCode, setQrCode] = useState<string>("");
-  const [pairingCode, setPairingCode] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [usePairingMethod, setUsePairingMethod] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState(false);
 
   const checkStatus = async () => {
@@ -36,21 +26,14 @@ export function WhatsAppPanel() {
       const data = await response.json();
       setStatus(data);
 
-      if (data.hasQR && !data.isReady && !data.usePairingCode) {
+      if (data.hasQR && !data.isReady) {
         const qrResponse = await fetch("/api/whatsapp/qr");
         if (qrResponse.ok) {
           const qrData = await qrResponse.json();
           setQrCode(qrData.qrCode);
         }
-      } else if (data.hasPairingCode && !data.isReady && data.usePairingCode) {
-        const pairingResponse = await fetch("/api/whatsapp/pairing-code");
-        if (pairingResponse.ok) {
-          const pairingData = await pairingResponse.json();
-          setPairingCode(pairingData.pairingCode);
-        }
       } else if (data.isReady) {
         setQrCode("");
-        setPairingCode("");
       }
     } catch (error) {
       console.error("Error checking WhatsApp status:", error);
@@ -58,22 +41,10 @@ export function WhatsAppPanel() {
   };
 
   const initializeWhatsApp = async () => {
-    if (usePairingMethod && !phoneNumber) {
-      alert("Por favor ingresa tu número de teléfono para usar el código de emparejamiento");
-      return;
-    }
-
     setIsInitializing(true);
     try {
       const response = await fetch("/api/whatsapp/initialize", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usePairingCode: usePairingMethod,
-          phoneNumber: usePairingMethod ? phoneNumber : undefined,
-        }),
       });
       
       if (response.ok) {
@@ -102,11 +73,8 @@ export function WhatsAppPanel() {
       });
       
       if (response.ok) {
-        setStatus({ isReady: false, isConnecting: false, hasQR: false, hasPairingCode: false, usePairingCode: false });
+        setStatus({ isReady: false, isConnecting: false, hasQR: false });
         setQrCode("");
-        setPairingCode("");
-        setPhoneNumber("");
-        setUsePairingMethod(false);
       }
     } catch (error) {
       console.error("Error disconnecting WhatsApp:", error);
@@ -145,59 +113,26 @@ export function WhatsAppPanel() {
       
       <CardContent className="space-y-4">
         {!status.isReady && !status.isConnecting && (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="pairing-method"
-                checked={usePairingMethod}
-                onCheckedChange={setUsePairingMethod}
-              />
-              <Label htmlFor="pairing-method">
-                Usar código de emparejamiento en lugar de QR
-              </Label>
-            </div>
-
-            {usePairingMethod && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Número de teléfono (con código de país)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">
-                  Ejemplo: +521234567890 (incluye el código de país)
-                </p>
-              </div>
+          <Button 
+            onClick={initializeWhatsApp} 
+            disabled={isInitializing}
+            className="w-full"
+          >
+            {isInitializing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Inicializando...
+              </>
+            ) : (
+              <>
+                <QrCode className="w-4 h-4 mr-2" />
+                Conectar WhatsApp
+              </>
             )}
-
-            <Button 
-              onClick={initializeWhatsApp} 
-              disabled={isInitializing || (usePairingMethod && !phoneNumber)}
-              className="w-full"
-            >
-              {isInitializing ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Inicializando...
-                </>
-              ) : (
-                <>
-                  {usePairingMethod ? (
-                    <Key className="w-4 h-4 mr-2" />
-                  ) : (
-                    <QrCode className="w-4 h-4 mr-2" />
-                  )}
-                  Conectar WhatsApp
-                </>
-              )}
-            </Button>
-          </div>
+          </Button>
         )}
 
-        {qrCode && !status.usePairingCode && (
+        {qrCode && (
           <div className="text-center space-y-3">
             <p className="text-sm text-gray-600">
               Escanea este código QR con tu WhatsApp:
@@ -211,22 +146,6 @@ export function WhatsAppPanel() {
             </div>
             <p className="text-xs text-gray-500">
               Abre WhatsApp → Menú → Dispositivos vinculados → Vincular dispositivo
-            </p>
-          </div>
-        )}
-
-        {pairingCode && status.usePairingCode && (
-          <div className="text-center space-y-3">
-            <p className="text-sm text-gray-600">
-              Ingresa este código en tu WhatsApp:
-            </p>
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-2xl font-mono font-bold text-blue-800 tracking-widest">
-                {pairingCode}
-              </p>
-            </div>
-            <p className="text-xs text-gray-500">
-              Abre WhatsApp → Menú → Dispositivos vinculados → Vincular dispositivo → Vincular con número de teléfono
             </p>
           </div>
         )}
