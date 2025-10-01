@@ -145,6 +145,32 @@ class WhatsAppService {
         const userName = contact.name || contact.pushname || 'Usuario';
         const chatType = chat.isGroup ? 'grupo' : 'privado';
 
+        // En grupos, solo responder si:
+        // 1. El mensaje menciona al bot
+        // 2. El mensaje es una respuesta a un mensaje del bot
+        if (chat.isGroup) {
+          const settings = await storage.getSettings();
+          const enableGroupMessages = settings?.enableGroupMessages === 'true';
+          
+          if (!enableGroupMessages) {
+            return; // No responder en grupos si está deshabilitado
+          }
+
+          // Verificar si el mensaje menciona al bot
+          const mentionedIds = await message.getMentions();
+          const botInfo = await this.client.getState();
+          const isMentioned = mentionedIds.some((mention: any) => mention.id._serialized === this.client.info.wid._serialized);
+          
+          // Verificar si el mensaje es una respuesta a un mensaje del bot
+          const quotedMsg = await message.getQuotedMessage();
+          const isReplyToBot = quotedMsg && quotedMsg.fromMe;
+
+          // Si no es mencionado ni respuesta al bot, ignorar
+          if (!isMentioned && !isReplyToBot) {
+            return;
+          }
+        }
+
         // Usar número de teléfono o ID de chat como identificador único
         const userId = `whatsapp_${contact.number || chat.id._serialized}`;
 
