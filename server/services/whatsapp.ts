@@ -35,6 +35,7 @@ class WhatsAppService {
 
     const puppeteerConfig: any = {
       headless: true,
+      timeout: 0,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -43,13 +44,17 @@ class WhatsAppService {
         '--no-first-run',
         '--no-zygote',
         '--single-process',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process'
       ]
     };
 
     if (chromiumPath) {
       puppeteerConfig.executablePath = chromiumPath;
     }
+
+    console.log('Configuración de Puppeteer:', JSON.stringify(puppeteerConfig, null, 2));
 
     this.client = new Client({
       authStrategy: new LocalAuth({
