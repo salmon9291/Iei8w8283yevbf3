@@ -65,28 +65,32 @@ class WhatsAppService {
   private setupEventHandlers() {
     if (!this.client) return;
     
+    this.client.on('loading_screen', (percent: any, message: any) => {
+      console.log('Cargando WhatsApp Web...', percent, message);
+    });
+
     this.client.on('qr', async (qr) => {
-      console.log('QR Code recibido');
+      console.log('✓ QR Code recibido, generando imagen...');
       try {
         this.qrCode = await QRCode.toDataURL(qr);
-        console.log('QR Code generado exitosamente');
+        console.log('✓ QR Code generado exitosamente, disponible para escanear');
       } catch (error) {
-        console.error('Error generando QR Code:', error);
+        console.error('✗ Error generando QR Code:', error);
       }
     });
 
     this.client.on('ready', () => {
-      console.log('WhatsApp Client está listo!');
+      console.log('✓ WhatsApp Client está listo!');
       this.isReady = true;
       this.isConnecting = false;
     });
 
     this.client.on('authenticated', () => {
-      console.log('WhatsApp autenticado exitosamente');
+      console.log('✓ WhatsApp autenticado exitosamente');
     });
 
     this.client.on('auth_failure', (msg) => {
-      console.error('Fallo en autenticación:', msg);
+      console.error('✗ Fallo en autenticación:', msg);
       this.isConnecting = false;
     });
 
@@ -94,6 +98,10 @@ class WhatsAppService {
       console.log('WhatsApp desconectado:', reason);
       this.isReady = false;
       this.isConnecting = false;
+    });
+
+    this.client.on('change_state', (state: any) => {
+      console.log('Estado cambió a:', state);
     });
 
     this.client.on('message_create', async (message) => {
@@ -127,22 +135,27 @@ class WhatsAppService {
 
   async initialize() {
     if (this.isConnecting || this.isReady) {
+      console.log('Ya está inicializando o listo');
       return;
     }
 
     try {
       this.isConnecting = true;
-      console.log('Inicializando cliente de WhatsApp...');
+      console.log('→ Paso 1: Inicializando cliente de WhatsApp...');
       
       await this.initializeClient();
+      console.log('→ Paso 2: Cliente creado, inicializando conexión...');
       
       if (!this.client) {
         throw new Error('No se pudo inicializar el cliente de WhatsApp');
       }
       
+      console.log('→ Paso 3: Llamando a client.initialize()...');
       await this.client.initialize();
-    } catch (error) {
-      console.error('Error inicializando WhatsApp:', error);
+      console.log('→ Paso 4: client.initialize() completado, esperando eventos...');
+    } catch (error: any) {
+      console.error('✗ Error inicializando WhatsApp:', error?.message || error);
+      console.error('Stack trace:', error?.stack);
       this.isConnecting = false;
       throw error;
     }

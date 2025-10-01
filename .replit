@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["chromium"]
+packages = ["chromium", "libGL", "libGLU", "mesa", "xorg.libX11", "xorg.libXcomposite", "xorg.libXcursor", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXi", "xorg.libXrandr", "xorg.libXrender", "xorg.libXtst", "fontconfig", "freetype", "alsa-lib", "nss", "nspr", "dbus", "gtk3", "glib", "cairo"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -14,10 +14,6 @@ run = ["npm", "run", "start"]
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 43427
-externalPort = 3000
 
 [workflows]
 runButton = "Project"
