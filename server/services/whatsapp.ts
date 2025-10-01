@@ -9,7 +9,7 @@ const execAsync = promisify(exec);
 const { Client, LocalAuth, MessageMedia } = whatsappWeb;
 
 class WhatsAppService {
-  private client: Client | null = null;
+  private client: InstanceType<typeof Client> | null = null;
   private qrCode: string = '';
   private pairingCode: string = '';
   private isReady: boolean = false;
@@ -84,7 +84,7 @@ class WhatsAppService {
       console.log('Cargando WhatsApp Web...', percent, message);
     });
 
-    this.client.on('qr', async (qr) => {
+    this.client.on('qr', async (qr: string) => {
       if (!this.usePairingCode) {
         console.log('✓ QR Code recibido, generando imagen...');
         try {
@@ -96,7 +96,7 @@ class WhatsAppService {
       }
     });
 
-    this.client.on('pairing_code', (code) => {
+    this.client.on('pairing_code', (code: string) => {
       console.log('✓ Código de emparejamiento recibido:', code);
       this.pairingCode = code;
     });
@@ -111,12 +111,12 @@ class WhatsAppService {
       console.log('✓ WhatsApp autenticado exitosamente');
     });
 
-    this.client.on('auth_failure', (msg) => {
+    this.client.on('auth_failure', (msg: string) => {
       console.error('✗ Fallo en autenticación:', msg);
       this.isConnecting = false;
     });
 
-    this.client.on('disconnected', (reason) => {
+    this.client.on('disconnected', (reason: string) => {
       console.log('WhatsApp desconectado:', reason);
       this.isReady = false;
       this.isConnecting = false;
@@ -124,17 +124,15 @@ class WhatsAppService {
       this.pairingCode = '';
       
       // Reset client state for potential reconnection
-      if (reason !== 'NAVIGATION') {
-        this.client = null;
-        this.isInitialized = false;
-      }
+      this.client = null;
+      this.isInitialized = false;
     });
 
     this.client.on('change_state', (state: any) => {
       console.log('Estado cambió a:', state);
     });
 
-    this.client.on('message_create', async (message) => {
+    this.client.on('message_create', async (message: any) => {
       // Solo responder a mensajes recibidos (no enviados por nosotros)
       if (message.fromMe) return;
 
