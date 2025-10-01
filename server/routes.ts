@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateChatResponse } from "./services/gemini";
+import { whatsappService } from "./services/whatsapp";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -56,6 +57,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ error: "Failed to process message" });
       }
+    }
+  });
+
+  // WhatsApp endpoints
+  app.post("/api/whatsapp/initialize", async (req, res) => {
+    try {
+      await whatsappService.initialize();
+      res.json({ message: "WhatsApp inicializando..." });
+    } catch (error) {
+      console.error("Error inicializando WhatsApp:", error);
+      res.status(500).json({ error: "Error inicializando WhatsApp" });
+    }
+  });
+
+  app.get("/api/whatsapp/qr", async (req, res) => {
+    try {
+      const qrCode = whatsappService.getQRCode();
+      if (!qrCode) {
+        res.status(404).json({ error: "QR Code no disponible" });
+        return;
+      }
+      res.json({ qrCode });
+    } catch (error) {
+      console.error("Error obteniendo QR:", error);
+      res.status(500).json({ error: "Error obteniendo QR Code" });
+    }
+  });
+
+  app.get("/api/whatsapp/status", async (req, res) => {
+    try {
+      const status = whatsappService.getStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error obteniendo estado:", error);
+      res.status(500).json({ error: "Error obteniendo estado" });
+    }
+  });
+
+  app.post("/api/whatsapp/disconnect", async (req, res) => {
+    try {
+      await whatsappService.disconnect();
+      res.json({ message: "WhatsApp desconectado" });
+    } catch (error) {
+      console.error("Error desconectando WhatsApp:", error);
+      res.status(500).json({ error: "Error desconectando WhatsApp" });
+    }
+  });
+
+  const sendMessageSchema = z.object({
+    to: z.string().min(1),
+    message: z.string().min(1),
+  });
+
+  app.post("/api/whatsapp/send", async (req, res) => {
+    try {
+      const { to, message } = sendMessageSchema.parse(req.body);
+      await whatsappService.sendMessage(to, message);
+      res.json({ message: "Mensaje enviado exitosamente" });
+    } catch (error) {
+      console.error("Error enviando mensaje:", error);
+      res.status(500).json({ error: "Error enviando mensaje" });
     }
   });
 
