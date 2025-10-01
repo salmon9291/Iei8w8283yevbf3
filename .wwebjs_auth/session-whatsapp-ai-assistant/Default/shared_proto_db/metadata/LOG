@@ -1,3 +1,3 @@
-2025/10/01-21:16:10.955 fed Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/shared_proto_db/metadata/MANIFEST-000001
-2025/10/01-21:16:10.956 fed Recovering log #3
-2025/10/01-21:16:10.956 fed Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/shared_proto_db/metadata/000003.log 
+2025/10/01-22:45:24.429 191 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/shared_proto_db/metadata/MANIFEST-000001
+2025/10/01-22:45:24.430 191 Recovering log #3
+2025/10/01-22:45:24.431 191 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/shared_proto_db/metadata/000003.log 
