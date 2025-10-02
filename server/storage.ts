@@ -31,17 +31,19 @@ export class MemStorage implements IStorage {
       enableGroupMessages: 'false',
       customPrompt: null,
       geminiApiKey: null,
+      restrictedNumbers: undefined, // Initialize restrictedNumbers
+      restrictedPrompt: undefined, // Initialize restrictedPrompt
     };
     this.usersFilePath = path.join(process.cwd(), "data", "users.json");
     this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");
     this.settingsFilePath = path.join(process.cwd(), "data", "settings.json");
-    
+
     // Ensure data directory exists
     const dataDir = path.dirname(this.usersFilePath);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
-    
+
     this.loadData();
   }
 
@@ -51,16 +53,17 @@ export class MemStorage implements IStorage {
         const usersData = JSON.parse(fs.readFileSync(this.usersFilePath, "utf-8"));
         this.users = new Map(usersData);
       }
-      
+
       if (fs.existsSync(this.messagesFilePath)) {
         const messagesData = JSON.parse(fs.readFileSync(this.messagesFilePath, "utf-8"));
         this.messages = new Map(messagesData);
         this.messageCounter = Math.max(...Array.from(this.messages.keys()), 0) + 1;
       }
-      
+
       if (fs.existsSync(this.settingsFilePath)) {
         const settingsData = JSON.parse(fs.readFileSync(this.settingsFilePath, "utf-8"));
-        this.settings = settingsData;
+        // Merge loaded settings with defaults, ensuring new fields are handled
+        this.settings = { ...this.settings, ...settingsData };
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -117,8 +120,8 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.messageCounter++;
-    const message: Message = { 
-      ...insertMessage, 
+    const message: Message = {
+      ...insertMessage,
       id,
       timestamp: new Date()
     };
@@ -131,7 +134,7 @@ export class MemStorage implements IStorage {
     const messagesToDelete = Array.from(this.messages.entries())
       .filter(([, message]) => message.username === username)
       .map(([id]) => id);
-    
+
     messagesToDelete.forEach(id => this.messages.delete(id));
     this.saveMessages();
   }
@@ -141,12 +144,44 @@ export class MemStorage implements IStorage {
   }
 
   async updateSettings(newSettings: Partial<InsertSettings>): Promise<Settings> {
+    // Ensure that restrictedNumbers and restrictedPrompt are handled correctly if they are undefined in newSettings
+    const settingsToUpdate: Partial<Settings> = {};
+    if (newSettings.enableGroupMessages !== undefined) {
+      settingsToUpdate.enableGroupMessages = newSettings.enableGroupMessages;
+    }
+    if (newSettings.customPrompt !== undefined) {
+      settingsToUpdate.customPrompt = newSettings.customPrompt;
+    }
+    if (newSettings.geminiApiKey !== undefined) {
+      settingsToUpdate.geminiApiKey = newSettings.geminiApiKey;
+    }
+    if (newSettings.restrictedNumbers !== undefined) {
+      settingsToUpdate.restrictedNumbers = newSettings.restrictedNumbers;
+    }
+    if (newSettings.restrictedPrompt !== undefined) {
+      settingsToUpdate.restrictedPrompt = newSettings.restrictedPrompt;
+    }
+
     this.settings = {
       ...this.settings,
-      ...newSettings,
+      ...settingsToUpdate,
     };
     this.saveSettings();
     return this.settings;
+  }
+
+  async getRestrictedNumbers(): Promise<string[]> {
+    const settings = await this.getSettings();
+    if (!settings.restrictedNumbers) return [];
+    return settings.restrictedNumbers.split(',').map(n => n.trim()).filter(n => n);
+  }
+
+  isRestrictedNumber(phoneNumber: string): boolean {
+    const settings = this.settings; // Access directly from this.settings
+    if (!settings || !settings.restrictedNumbers) return false;
+
+    const restrictedList = settings.restrictedNumbers.split(',').map(n => n.trim()).filter(n => n);
+    return restrictedList.some(num => phoneNumber.includes(num));
   }
 }
 

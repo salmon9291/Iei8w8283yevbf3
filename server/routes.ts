@@ -193,6 +193,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     enableGroupMessages: z.string().optional(),
     customPrompt: z.string().optional(),
     geminiApiKey: z.string().optional(),
+    restrictedNumbers: z.string().optional(),
+    restrictedPrompt: z.string().optional(),
   });
 
   app.post("/api/settings", async (req, res) => {

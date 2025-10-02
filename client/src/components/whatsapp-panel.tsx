@@ -47,6 +47,8 @@ export function WhatsAppPanel() {
   const [manualMessage, setManualMessage] = useState('');
   const [manualRecipient, setManualRecipient] = useState('');
   const [isSendingManual, setIsSendingManual] = useState(false);
+  const [restrictedNumbers, setRestrictedNumbers] = useState('');
+  const [restrictedPrompt, setRestrictedPrompt] = useState('');
 
   const handleSendManualMessage = async () => {
     if (!manualMessage.trim() || !manualRecipient.trim()) {
@@ -184,6 +186,8 @@ export function WhatsAppPanel() {
           setCustomPrompt(settings.customPrompt || '');
           setEnableGroupMessages(settings.enableGroupMessages === 'true');
           setGeminiApiKey(settings.geminiApiKey || '');
+          setRestrictedNumbers(settings.restrictedNumbers || '');
+          setRestrictedPrompt(settings.restrictedPrompt || '');
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -206,6 +210,8 @@ export function WhatsAppPanel() {
           customPrompt,
           enableGroupMessages: enableGroupMessages.toString(),
           geminiApiKey: geminiApiKey || undefined,
+          restrictedNumbers: restrictedNumbers || undefined,
+          restrictedPrompt: restrictedPrompt || undefined,
         }),
       });
 
@@ -485,6 +491,36 @@ export function WhatsAppPanel() {
                   <Label htmlFor="group-messages">
                     Habilitar mensajes en grupos (solo responde si lo mencionan o le responden)
                   </Label>
+                </div>
+
+                <div className="space-y-2 p-4 border border-red-200 rounded-lg bg-red-50">
+                  <Label htmlFor="restricted-numbers" className="text-red-800 font-bold">
+                    Lista de Números Restringidos
+                  </Label>
+                  <Input
+                    id="restricted-numbers"
+                    type="text"
+                    placeholder="5213532485503, 5213531066061, ..."
+                    value={restrictedNumbers}
+                    onChange={(e) => setRestrictedNumbers(e.target.value)}
+                  />
+                  <p className="text-sm text-red-700">
+                    Ingresa los números separados por comas. Estos números recibirán el prompt especial de abajo.
+                  </p>
+
+                  <Label htmlFor="restricted-prompt" className="text-red-800 font-bold">
+                    Prompt Especial para Números Restringidos
+                  </Label>
+                  <Textarea
+                    id="restricted-prompt"
+                    placeholder="Ingresa el prompt especial..."
+                    value={restrictedPrompt}
+                    onChange={(e) => setRestrictedPrompt(e.target.value)}
+                    rows={6}
+                  />
+                  <p className="text-sm text-red-700">
+                    Este prompt se usará SOLAMENTE con los números de la lista de arriba.
+                  </p>
                 </div>
 
                 <Button 

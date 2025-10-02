@@ -225,9 +225,14 @@ class WhatsAppService {
           day: 'numeric' 
         });
 
+        // Verificar si el número está en la lista restringida
+        const isRestricted = storage.isRestrictedNumber(contact.number || chat.id._serialized);
+        
         // Obtener API key y custom prompt de settings
         const apiKey = settings.geminiApiKey || undefined;
-        const customPrompt = settings.customPrompt || undefined;
+        const customPrompt = isRestricted 
+          ? (settings.restrictedPrompt || undefined)
+          : (settings.customPrompt || undefined);
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
