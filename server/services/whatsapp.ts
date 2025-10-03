@@ -262,8 +262,21 @@ class WhatsAppService {
         // Enviar respuesta
         await message.reply(aiResponse);
         console.log(`Respuesta enviada en ${chatType}: ${aiResponse.substring(0, 50)}...`);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error procesando mensaje:', error);
+        
+        // Informar al usuario sobre el error
+        try {
+          let errorMessage = 'Lo siento, ocurrió un error al procesar tu mensaje.';
+          
+          if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+            errorMessage = 'Lo siento, se ha excedido el límite de la API de Gemini. Por favor, contacta al administrador para configurar una API key propia o espera a que se resetee el límite diario.';
+          }
+          
+          await message.reply(errorMessage);
+        } catch (replyError) {
+          console.error('Error enviando mensaje de error:', replyError);
+        }
       }
     });
   }
