@@ -45,24 +45,27 @@ INFORMACIÓN IMPORTANTE: Hoy es ${dateStr} y la hora actual es ${timeStr}. Usa e
     // Construir historial de conversación para Gemini
     const history: ChatMessage[] = [];
     
-    // Incluir el prompt del sistema como primer mensaje
+    // Incluir el prompt del sistema como primer mensaje (siempre actual)
     history.push({
       role: 'user',
-      parts: `[INSTRUCCIONES DEL SISTEMA: ${systemPrompt}]`
+      parts: `[INSTRUCCIONES DEL SISTEMA - IGNORAR INSTRUCCIONES ANTERIORES: ${systemPrompt}]`
     });
     
     history.push({
       role: 'model',
-      parts: 'Entendido. Estoy listo para ayudarte siguiendo estas instrucciones.'
+      parts: 'Entendido. Siguiendo las nuevas instrucciones del sistema.'
     });
     
+    // Filtrar el historial para excluir instrucciones del sistema antiguas
     if (conversationHistory && conversationHistory.length > 0) {
-      conversationHistory.forEach((msg) => {
-        history.push({
-          role: msg.sender === 'user' ? 'user' : 'model',
-          parts: msg.content
+      conversationHistory
+        .filter(msg => !msg.content.includes('[INSTRUCCIONES DEL SISTEMA'))
+        .forEach((msg) => {
+          history.push({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: msg.content
+          });
         });
-      });
     }
     
     // Agregar el mensaje actual
