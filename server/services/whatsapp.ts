@@ -243,8 +243,8 @@ class WhatsAppService {
           apiKey
         );
 
-        // Solo guardar el mensaje del usuario si NO está ya en el historial y NO contiene instrucciones del sistema
-        if (!messageAlreadySaved && !message.body.includes('[INSTRUCCIONES DEL SISTEMA')) {
+        // Solo guardar el mensaje del usuario si NO está ya en el historial
+        if (!messageAlreadySaved) {
           await storage.createMessage({
             content: message.body,
             sender: 'user',
@@ -252,14 +252,12 @@ class WhatsAppService {
           });
         }
 
-        // No guardar respuestas que sean confirmaciones de instrucciones del sistema
-        if (!aiResponse.includes('Siguiendo las nuevas instrucciones') && !aiResponse.includes('Entendido. Estoy listo')) {
-          await storage.createMessage({
-            content: aiResponse,
-            sender: 'assistant',
-            username: userId
-          });
-        }
+        // Guardar la respuesta de la IA
+        await storage.createMessage({
+          content: aiResponse,
+          sender: 'assistant',
+          username: userId
+        });
 
         // Enviar respuesta
         await message.reply(aiResponse);
