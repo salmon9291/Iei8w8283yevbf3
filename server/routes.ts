@@ -261,6 +261,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clean system instructions from user history
+  app.post("/api/messages/:username/clean-instructions", async (req, res) => {
+    try {
+      const { username } = req.params;
+      const messages = await storage.getMessages(username);
+      
+      // Filter out system instructions
+      const cleanedMessages = messages.filter((msg: any) => {
+        const content = msg.content || '';
+        const isSystemInstruction = 
+          content.includes('[INSTRUCCIONES DEL SISTEMA') || 
+          content.includes('Siguiendo las nuevas instrucciones') ||
+          content.includes('Entendido. Estoy listo') ||
+          content.includes('Eres un asistente de IA') ||
+          content.includes('Eres una IA creada por') ||
+          content.startsWith('Eres ') && content.includes('Tu nombre es') ||
+          content.includes('INFORMACIÓN IMPORTANTE: Hoy es') ||
+          (content.length > 200 && content.includes('responde') && content.includes('asistente'));
+        
+        return !isSystemInstruction;
+      });
+
+      // Clear and save cleaned messages
+      await storage.clearMessages(username);
+      for (const msg of cleanedMessages) {
+        await storage.createMessage({
+          content: msg.content,
+          sender: msg.sender,
+          username: msg.username
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        removed: messages.length - cleanedMessages.length,
+        remaining: cleanedMessages.length 
+      });
+    } catch (error) {
+      console.error("Error cleaning system instructions:", error);
+      res.status(500).json({ error: "Failed to clean system instructions" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

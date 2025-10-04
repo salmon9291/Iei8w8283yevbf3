@@ -63,10 +63,18 @@ INFORMACIÓN IMPORTANTE: Hoy es ${dateStr} y la hora actual es ${timeStr}. Usa e
         .filter(msg => {
           const content = msg.content || '';
           // Excluir instrucciones del sistema, confirmaciones y mensajes vacíos
-          return !content.includes('[INSTRUCCIONES DEL SISTEMA') && 
-                 !content.includes('Siguiendo las nuevas instrucciones') &&
-                 !content.includes('Entendido. Estoy listo') &&
-                 content.trim().length > 0;
+          // Detectar si el mensaje parece ser una instrucción del sistema
+          const isSystemInstruction = 
+            content.includes('[INSTRUCCIONES DEL SISTEMA') || 
+            content.includes('Siguiendo las nuevas instrucciones') ||
+            content.includes('Entendido. Estoy listo') ||
+            content.includes('Eres un asistente de IA') ||
+            content.includes('Eres una IA creada por') ||
+            content.startsWith('Eres ') && content.includes('Tu nombre es') ||
+            content.includes('INFORMACIÓN IMPORTANTE: Hoy es') ||
+            (content.length > 200 && content.includes('responde') && content.includes('asistente'));
+          
+          return !isSystemInstruction && content.trim().length > 0;
         })
         .forEach((msg) => {
           history.push({
