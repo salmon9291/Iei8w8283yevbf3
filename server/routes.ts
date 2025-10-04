@@ -261,6 +261,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clean all messages from all users
+  app.post("/api/messages/clear-all", async (req, res) => {
+    try {
+      // Clear messages.json completely
+      const fs = require('fs');
+      const path = require('path');
+      const messagesPath = path.join(process.cwd(), "data", "messages.json");
+      fs.writeFileSync(messagesPath, JSON.stringify([]));
+      
+      res.json({ 
+        message: "Toda la memoria de mensajes ha sido limpiada exitosamente" 
+      });
+    } catch (error: any) {
+      console.error("Error limpiando mensajes:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Clean system instructions from user history
   app.post("/api/messages/:username/clean-instructions", async (req, res) => {
     try {
