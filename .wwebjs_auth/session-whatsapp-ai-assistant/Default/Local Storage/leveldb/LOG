@@ -1,3 +1,6 @@
-2025/10/04-01:06:12.683 449 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/Local Storage/leveldb/MANIFEST-000001
-2025/10/04-01:06:12.837 449 Recovering log #3
-2025/10/04-01:06:12.840 449 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/Local Storage/leveldb/000003.log 
+2025/10/04-01:11:02.708 626 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/Local Storage/leveldb/MANIFEST-000001
+2025/10/04-01:11:02.713 626 Recovering log #3
+2025/10/04-01:11:02.713 626 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/Local Storage/leveldb/000003.log 
+2025/10/04-01:13:03.102 626 Level-0 table #5: started
+2025/10/04-01:13:03.117 626 Level-0 table #5: 18807 bytes OK
+2025/10/04-01:13:03.122 626 Delete type=0 #3
