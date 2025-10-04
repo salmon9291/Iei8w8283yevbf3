@@ -66,13 +66,18 @@ export function WhatsAppPanel() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      const response = await fetch("/api/whatsapp/connect", { method: "POST" });
+      const response = await fetch("/api/whatsapp/initialize", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usePairingCode: false
+        })
+      });
+      
       if (response.ok) {
-        const data = await response.json();
-        if (data.qr) {
-          setQrCode(data.qr);
-        }
         pollForConnection();
+      } else {
+        throw new Error("Error al inicializar WhatsApp");
       }
     } catch (error) {
       console.error("Error connecting:", error);
@@ -109,10 +114,22 @@ export function WhatsAppPanel() {
   const pollForConnection = () => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch("/api/whatsapp/status");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.connected) {
+        const statusResponse = await fetch("/api/whatsapp/status");
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          
+          // Obtener QR code si está disponible
+          if (statusData.hasQR) {
+            const qrResponse = await fetch("/api/whatsapp/qr");
+            if (qrResponse.ok) {
+              const qrData = await qrResponse.json();
+              if (qrData.qrCode) {
+                setQrCode(qrData.qrCode);
+              }
+            }
+          }
+          
+          if (statusData.isReady) {
             setIsConnected(true);
             setIsConnecting(false);
             setQrCode("");
