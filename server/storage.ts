@@ -10,6 +10,7 @@ export interface IStorage {
   getMessages(username: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   clearMessages(username: string): Promise<void>;
+  clearAllMessages(): Promise<void>;
   getSettings(): Promise<Settings>;
   updateSettings(settings: Partial<InsertSettings>): Promise<Settings>;
 }
@@ -31,8 +32,8 @@ export class MemStorage implements IStorage {
       enableGroupMessages: 'false',
       customPrompt: null,
       geminiApiKey: null,
-      restrictedNumbers: undefined, // Initialize restrictedNumbers
-      restrictedPrompt: undefined, // Initialize restrictedPrompt
+      restrictedNumbers: null,
+      restrictedPrompt: null,
     };
     this.usersFilePath = path.join(process.cwd(), "data", "users.json");
     this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");
@@ -136,6 +137,11 @@ export class MemStorage implements IStorage {
       .map(([id]) => id);
 
     messagesToDelete.forEach(id => this.messages.delete(id));
+    this.saveMessages();
+  }
+
+  async clearAllMessages(): Promise<void> {
+    this.messages.clear();
     this.saveMessages();
   }
 

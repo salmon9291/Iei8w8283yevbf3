@@ -264,11 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Clean all messages from all users
   app.post("/api/messages/clear-all", async (req, res) => {
     try {
-      // Clear messages.json completely
-      const fs = require('fs');
-      const path = require('path');
-      const messagesPath = path.join(process.cwd(), "data", "messages.json");
-      fs.writeFileSync(messagesPath, JSON.stringify([]));
+      await storage.clearAllMessages();
       
       res.json({ 
         message: "Toda la memoria de mensajes ha sido limpiada exitosamente" 

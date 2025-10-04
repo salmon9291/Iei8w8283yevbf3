@@ -22,6 +22,8 @@ export const settings = pgTable("settings", {
   enableGroupMessages: text("enable_group_messages").notNull().default('false'),
   customPrompt: text("custom_prompt"),
   geminiApiKey: text("gemini_api_key"),
+  restrictedNumbers: text("restricted_numbers"),
+  restrictedPrompt: text("restricted_prompt"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -39,6 +41,8 @@ export const insertSettingsSchema = createInsertSchema(settings).pick({
   enableGroupMessages: true,
   customPrompt: true,
   geminiApiKey: true,
+  restrictedNumbers: true,
+  restrictedPrompt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
