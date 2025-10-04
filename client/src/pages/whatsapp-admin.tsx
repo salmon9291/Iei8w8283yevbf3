@@ -241,7 +241,20 @@ export default function WhatsAppAdmin() {
           </CardContent>
         </Card>
 
-        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Conexión de WhatsApp
+            </CardTitle>
+            <CardDescription>
+              Conecta o desconecta tu cuenta de WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WhatsAppPanel />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
