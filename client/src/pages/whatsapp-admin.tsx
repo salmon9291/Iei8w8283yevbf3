@@ -176,6 +176,37 @@ export default function WhatsAppAdmin() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="restrictedNumbers">
+                  Números Restringidos (separados por coma)
+                </Label>
+                <Input
+                  id="restrictedNumbers"
+                  value={settings.restrictedNumbers || ""}
+                  onChange={(e) => setSettings({ ...settings, restrictedNumbers: e.target.value })}
+                  placeholder="521234567890,521987654321"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Ejemplo: 5213532310802,5219876543210
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="restrictedPrompt">
+                  Prompt Personalizado para Números Restringidos
+                </Label>
+                <Textarea
+                  id="restrictedPrompt"
+                  value={settings.restrictedPrompt || ""}
+                  onChange={(e) => setSettings({ ...settings, restrictedPrompt: e.target.value })}
+                  placeholder="Instrucciones especiales para estos números..."
+                  className="min-h-[150px]"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Este prompt se usará solo para los números en la lista de restringidos
+                </p>
+              </div>
+
               <Button type="submit" className="w-full" disabled={isSaving}>
                 {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Guardar Configuración
@@ -210,50 +241,7 @@ export default function WhatsAppAdmin() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Números Restringidos
-            </CardTitle>
-            <CardDescription>
-              Números de teléfono que usarán el prompt personalizado restringido
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="restrictedNumbers">
-                Números Restringidos (separados por coma)
-              </Label>
-              <Input
-                id="restrictedNumbers"
-                value={settings.restrictedNumbers || ""}
-                onChange={(e) => setSettings({ ...settings, restrictedNumbers: e.target.value })}
-                placeholder="521234567890,521987654321"
-              />
-              <p className="text-sm text-muted-foreground">
-                Ejemplo: 5213532310802,5219876543210
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="restrictedPrompt">
-                Prompt Personalizado para Números Restringidos
-              </Label>
-              <Textarea
-                id="restrictedPrompt"
-                value={settings.restrictedPrompt || ""}
-                onChange={(e) => setSettings({ ...settings, restrictedPrompt: e.target.value })}
-                placeholder="Instrucciones especiales para estos números..."
-                className="min-h-[150px]"
-              />
-              <p className="text-sm text-muted-foreground">
-                Este prompt se usará solo para los números en la lista de restringidos
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        </form>
+        
       </div>
     </div>
   );
