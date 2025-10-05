@@ -1,29 +1,29 @@
-2025/10/05-23:45:45.141 58a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/05-23:45:45.142 58a Recovering log #904
-2025/10/05-23:45:45.168 58a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000904.log 
-2025/10/05-23:45:45.706 58e Level-0 table #917: started
-2025/10/05-23:45:45.745 58e Level-0 table #917: 350456 bytes OK
-2025/10/05-23:45:45.770 58e Delete type=0 #904
-2025/10/05-23:45:45.776 588 Manual compaction at level-0 from '\x00l\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00m\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/05-23:45:48.102 58e Compacting 1@1 + 9@2 files
-2025/10/05-23:45:48.247 58e Generated table #918@1: 85990 keys, 2234547 bytes
-2025/10/05-23:45:48.332 58e Generated table #919@1: 61847 keys, 2242765 bytes
-2025/10/05-23:45:48.381 58e Generated table #920@1: 2513 keys, 2153827 bytes
-2025/10/05-23:45:48.511 58e Generated table #921@1: 24480 keys, 2232513 bytes
-2025/10/05-23:45:48.585 58e Generated table #922@1: 21315 keys, 2205843 bytes
-2025/10/05-23:45:48.706 58e Generated table #923@1: 50268 keys, 2263310 bytes
-2025/10/05-23:45:48.804 58e Generated table #924@1: 27604 keys, 2229914 bytes
-2025/10/05-23:45:48.905 58e Generated table #925@1: 90529 keys, 2237710 bytes
-2025/10/05-23:45:48.931 58e Generated table #926@1: 26838 keys, 591600 bytes
-2025/10/05-23:45:48.931 58e Compacted 1@1 + 9@2 files => 18392029 bytes
-2025/10/05-23:45:48.939 58e compacted to: files[ 0 0 9 0 0 0 0 ]
-2025/10/05-23:45:48.939 58e Delete type=2 #906
-2025/10/05-23:45:48.939 58e Delete type=2 #907
-2025/10/05-23:45:48.939 58e Delete type=2 #908
-2025/10/05-23:45:48.940 58e Delete type=2 #909
-2025/10/05-23:45:48.940 58e Delete type=2 #910
-2025/10/05-23:45:48.940 58e Delete type=2 #911
-2025/10/05-23:45:48.940 58e Delete type=2 #912
-2025/10/05-23:45:48.940 58e Delete type=2 #913
-2025/10/05-23:45:48.940 58e Delete type=2 #914
-2025/10/05-23:45:48.940 58e Delete type=2 #917
+2025/10/05-23:52:58.265 952 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/05-23:52:58.266 952 Recovering log #916
+2025/10/05-23:52:58.288 952 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000916.log 
+2025/10/05-23:52:58.653 97a Level-0 table #929: started
+2025/10/05-23:52:58.710 97a Level-0 table #929: 1295337 bytes OK
+2025/10/05-23:52:58.723 97a Delete type=0 #916
+2025/10/05-23:52:58.724 952 Manual compaction at level-0 from '\x00m\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00n\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/05-23:53:00.626 957 Compacting 1@1 + 9@2 files
+2025/10/05-23:53:00.745 957 Generated table #930@1: 86114 keys, 2236486 bytes
+2025/10/05-23:53:00.812 957 Generated table #931@1: 63323 keys, 2244373 bytes
+2025/10/05-23:53:00.874 957 Generated table #932@1: 2352 keys, 2148749 bytes
+2025/10/05-23:53:00.948 957 Generated table #933@1: 22954 keys, 2228347 bytes
+2025/10/05-23:53:01.034 957 Generated table #934@1: 21321 keys, 2204741 bytes
+2025/10/05-23:53:01.160 957 Generated table #935@1: 49157 keys, 2256089 bytes
+2025/10/05-23:53:01.286 957 Generated table #936@1: 30127 keys, 2244219 bytes
+2025/10/05-23:53:01.400 957 Generated table #937@1: 81613 keys, 2225046 bytes
+2025/10/05-23:53:01.449 957 Generated table #938@1: 36485 keys, 802673 bytes
+2025/10/05-23:53:01.449 957 Compacted 1@1 + 9@2 files => 18590723 bytes
+2025/10/05-23:53:01.456 957 compacted to: files[ 0 0 9 0 0 0 0 ]
+2025/10/05-23:53:01.457 957 Delete type=2 #918
+2025/10/05-23:53:01.457 957 Delete type=2 #919
+2025/10/05-23:53:01.457 957 Delete type=2 #920
+2025/10/05-23:53:01.457 957 Delete type=2 #921
+2025/10/05-23:53:01.457 957 Delete type=2 #922
+2025/10/05-23:53:01.457 957 Delete type=2 #923
+2025/10/05-23:53:01.457 957 Delete type=2 #924
+2025/10/05-23:53:01.457 957 Delete type=2 #925
+2025/10/05-23:53:01.458 957 Delete type=2 #926
+2025/10/05-23:53:01.458 957 Delete type=2 #929
