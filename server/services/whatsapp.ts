@@ -4,7 +4,6 @@ import { generateChatResponse } from './gemini';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { storage } from '../storage';
-import ytdl from '@distube/ytdl-core';
 import fs from 'fs';
 import path from 'path';
 
@@ -31,39 +30,38 @@ class WhatsAppService {
         fs.mkdirSync(downloadsDir, { recursive: true });
       }
 
-      // Obtener info del video
-      const info = await ytdl.getInfo(url);
-      const videoTitle = info.videoDetails.title.replace(/[^\w\s-]/g, '').substring(0, 50);
-      const outputPath = path.join(downloadsDir, `${videoTitle}_${Date.now()}.mp4`);
+      // Generar nombre de archivo único
+      const outputFileName = `video_${Date.now()}.mp4`;
+      const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Descargar video
-      return new Promise((resolve, reject) => {
-        const videoStream = ytdl(url, {
-          quality: 'highest',
-          filter: 'audioandvideo'
-        });
+      // Usar yt-dlp para descargar el video
+      // -f "best[ext=mp4][filesize<64M]" : mejor calidad mp4 menor a 64MB
+      // --no-playlist : solo descargar un video
+      // -o : especificar ruta de salida
+      const command = `yt-dlp -f "best[ext=mp4][filesize<64M]/best[filesize<64M]/best" --no-playlist -o "${outputPath}" "${url}"`;
+      
+      console.log('Ejecutando comando yt-dlp:', command);
+      
+      const { stdout, stderr } = await execAsync(command);
+      
+      if (stderr && !stderr.includes('Deleting original file')) {
+        console.log('yt-dlp stderr:', stderr);
+      }
+      
+      console.log('yt-dlp stdout:', stdout);
 
-        const writeStream = fs.createWriteStream(outputPath);
-        
-        videoStream.pipe(writeStream);
-
-        writeStream.on('finish', () => {
-          console.log('Video descargado exitosamente:', outputPath);
-          resolve(outputPath);
-        });
-
-        writeStream.on('error', (error) => {
-          console.error('Error descargando video:', error);
-          reject(error);
-        });
-
-        videoStream.on('error', (error) => {
-          console.error('Error en stream de video:', error);
-          reject(error);
-        });
-      });
-    } catch (error) {
+      // Verificar que el archivo existe
+      if (fs.existsSync(outputPath)) {
+        console.log('Video descargado exitosamente:', outputPath);
+        return outputPath;
+      } else {
+        console.error('El archivo no fue creado');
+        return null;
+      }
+    } catch (error: any) {
       console.error('Error en downloadYouTubeVideo:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stderr:', error.stderr);
       return null;
     }
   }
