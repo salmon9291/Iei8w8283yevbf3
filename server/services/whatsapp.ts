@@ -4,6 +4,9 @@ import { generateChatResponse } from './gemini';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { storage } from '../storage';
+import ytdl from '@distube/ytdl-core';
+import fs from 'fs';
+import path from 'path';
 
 const execAsync = promisify(exec);
 const { Client, LocalAuth, MessageMedia } = whatsappWeb;
@@ -19,6 +22,51 @@ class WhatsAppService {
   private customPrompt: string = '';
 
   constructor() {}
+
+  private async downloadYouTubeVideo(url: string): Promise<string | null> {
+    try {
+      // Crear directorio de descargas si no existe
+      const downloadsDir = path.join(process.cwd(), 'downloads');
+      if (!fs.existsSync(downloadsDir)) {
+        fs.mkdirSync(downloadsDir, { recursive: true });
+      }
+
+      // Obtener info del video
+      const info = await ytdl.getInfo(url);
+      const videoTitle = info.videoDetails.title.replace(/[^\w\s-]/g, '').substring(0, 50);
+      const outputPath = path.join(downloadsDir, `${videoTitle}_${Date.now()}.mp4`);
+
+      // Descargar video
+      return new Promise((resolve, reject) => {
+        const videoStream = ytdl(url, {
+          quality: 'highest',
+          filter: 'audioandvideo'
+        });
+
+        const writeStream = fs.createWriteStream(outputPath);
+        
+        videoStream.pipe(writeStream);
+
+        writeStream.on('finish', () => {
+          console.log('Video descargado exitosamente:', outputPath);
+          resolve(outputPath);
+        });
+
+        writeStream.on('error', (error) => {
+          console.error('Error descargando video:', error);
+          reject(error);
+        });
+
+        videoStream.on('error', (error) => {
+          console.error('Error en stream de video:', error);
+          reject(error);
+        });
+      });
+    } catch (error) {
+      console.error('Error en downloadYouTubeVideo:', error);
+      return null;
+    }
+  }
 
   private async getChromiumPath(): Promise<string | null> {
     try {
@@ -205,6 +253,56 @@ class WhatsAppService {
         const userId = `whatsapp_${contact.number || chat.id._serialized}`;
 
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
+
+        // Detectar comando de descarga de YouTube
+        const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/i;
+        const match = message.body.match(youtubeDownloadRegex);
+
+        if (match) {
+          // Extraer URL completa del video
+          const videoId = match[4];
+          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+          
+          try {
+            await message.reply('🎥 Descargando video de YouTube, esto puede tomar unos minutos...');
+            
+            const videoPath = await this.downloadYouTubeVideo(videoUrl);
+            
+            if (videoPath && fs.existsSync(videoPath)) {
+              // Verificar el tamaño del archivo
+              const stats = fs.statSync(videoPath);
+              const fileSizeMB = stats.size / (1024 * 1024);
+              
+              if (fileSizeMB > 64) {
+                await message.reply(`❌ El video es demasiado grande (${fileSizeMB.toFixed(2)}MB). WhatsApp solo permite archivos de hasta 64MB.`);
+                // Eliminar el archivo descargado
+                fs.unlinkSync(videoPath);
+              } else {
+                // Crear media desde el archivo
+                const media = MessageMedia.fromFilePath(videoPath);
+                
+                // Enviar el video
+                await message.reply(media, undefined, { caption: '✅ Aquí está tu video de YouTube' });
+                console.log(`Video enviado exitosamente: ${videoPath}`);
+                
+                // Eliminar el archivo después de enviarlo
+                setTimeout(() => {
+                  if (fs.existsSync(videoPath)) {
+                    fs.unlinkSync(videoPath);
+                    console.log(`Archivo temporal eliminado: ${videoPath}`);
+                  }
+                }, 5000);
+              }
+            } else {
+              await message.reply('❌ Error al descargar el video. Verifica que el enlace sea correcto.');
+            }
+          } catch (error: any) {
+            console.error('Error procesando descarga de YouTube:', error);
+            await message.reply(`❌ Error al descargar el video: ${error.message || 'Error desconocido'}`);
+          }
+          
+          return; // No continuar con el procesamiento normal de Gemini
+        }
 
         // Obtener historial de conversación
         const conversationHistory = await storage.getMessages(userId);
