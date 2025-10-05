@@ -34,15 +34,21 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Usar yt-dlp para descargar el video
-      // -f "best[ext=mp4][filesize<64M]" : mejor calidad mp4 menor a 64MB
+      // Usar yt-dlp para descargar el video con múltiples intentos de formato
+      // Opciones simplificadas y más compatibles:
+      // -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" : intentar múltiples formatos
+      // --merge-output-format mp4 : forzar salida en mp4
       // --no-playlist : solo descargar un video
+      // --no-check-certificate : bypass SSL issues
+      // --max-filesize 64M : limitar tamaño
       // -o : especificar ruta de salida
-      const command = `yt-dlp -f "best[ext=mp4][filesize<64M]/best[filesize<64M]/best" --no-playlist -o "${outputPath}" "${url}"`;
+      const command = `yt-dlp -f "bestvideo[ext=mp4][filesize<64M]+bestaudio[ext=m4a]/best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --no-check-certificate --max-filesize 64M -o "${outputPath}" "${url}"`;
       
       console.log('Ejecutando comando yt-dlp:', command);
       
-      const { stdout, stderr } = await execAsync(command);
+      const { stdout, stderr } = await execAsync(command, { 
+        timeout: 120000 // 2 minutos timeout
+      });
       
       if (stderr && !stderr.includes('Deleting original file')) {
         console.log('yt-dlp stderr:', stderr);
