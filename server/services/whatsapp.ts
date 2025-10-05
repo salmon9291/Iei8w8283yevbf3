@@ -257,6 +257,9 @@ class WhatsAppService {
         // Detectar comando de descarga de YouTube
         const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/i;
         const match = message.body.match(youtubeDownloadRegex);
+        
+        console.log('DEBUG - Buscando comando de descarga en:', message.body);
+        console.log('DEBUG - Match resultado:', match);
 
         if (match) {
           // Extraer URL completa del video
