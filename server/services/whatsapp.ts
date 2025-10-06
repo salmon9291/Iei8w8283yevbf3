@@ -22,7 +22,7 @@ class WhatsAppService {
 
   constructor() {}
 
-  private async downloadYouTubeVideo(url: string): Promise<string | null> {
+  private async downloadYouTubeVideo(url: string, isInstagram: boolean = false): Promise<string | null> {
     try {
       // Crear directorio de descargas si no existe
       const downloadsDir = path.join(process.cwd(), 'downloads');
@@ -34,15 +34,16 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Usar yt-dlp para descargar el video con múltiples intentos de formato
-      // Opciones para evitar restricciones de YouTube:
-      // --extractor-args "youtube:player_client=android" : usar cliente Android para evitar restricciones
-      // -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" : formato simple que suele funcionar mejor
-      // --merge-output-format mp4 : forzar salida en mp4
-      // --no-playlist : solo descargar un video
-      // --max-filesize 64M : limitar tamaño
-      // -o : especificar ruta de salida
-      const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      let command: string;
+
+      if (isInstagram) {
+        // Para Instagram: usar yt-dlp sin autenticación pero con user-agent
+        // Nota: Esto puede funcionar para contenido público, pero no garantizado
+        command = `yt-dlp --no-check-certificates --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      } else {
+        // Para YouTube: usar cliente Android para evitar restricciones
+        command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      }
       
       console.log('Ejecutando comando yt-dlp:', command);
       
@@ -275,16 +276,10 @@ class WhatsAppService {
           const videoUrl = isYouTube ? youtubeMatch[1] : instagramMatch[1];
           const platform = isYouTube ? 'YouTube' : 'Instagram';
           
-          // Instagram requiere autenticación, informar al usuario
-          if (!isYouTube) {
-            await message.reply('❌ Lo siento, Instagram requiere autenticación para descargar videos. Por ahora solo funciona con YouTube.\n\n✅ Usa: `/descarga yt [enlace de YouTube]`');
-            return;
-          }
-          
           try {
-            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...`);
+            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...${!isYouTube ? '\n\n⚠️ Nota: Instagram puede requerir autenticación. Si falla, solo contenido público estará disponible.' : ''}`);
             
-            const videoPath = await this.downloadYouTubeVideo(videoUrl);
+            const videoPath = await this.downloadYouTubeVideo(videoUrl, !isYouTube);
             
             if (videoPath && fs.existsSync(videoPath)) {
               // Verificar el tamaño del archivo
