@@ -259,19 +259,24 @@ class WhatsAppService {
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
 
         // Detectar comando de descarga de YouTube
-        const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/i;
-        const match = message.body.match(youtubeDownloadRegex);
+        const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/[^\s]+)/i;
+        const youtubeMatch = message.body.match(youtubeDownloadRegex);
+        
+        // Detectar comando de descarga de Instagram
+        const instagramDownloadRegex = /^\/descarga\s+ig\s+(https?:\/\/[^\s]+)/i;
+        const instagramMatch = message.body.match(instagramDownloadRegex);
         
         console.log('DEBUG - Buscando comando de descarga en:', message.body);
-        console.log('DEBUG - Match resultado:', match);
+        console.log('DEBUG - YouTube Match:', youtubeMatch);
+        console.log('DEBUG - Instagram Match:', instagramMatch);
 
-        if (match) {
-          // Extraer URL completa del video
-          const videoId = match[4];
-          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        if (youtubeMatch || instagramMatch) {
+          const isYouTube = !!youtubeMatch;
+          const videoUrl = isYouTube ? youtubeMatch[1] : instagramMatch[1];
+          const platform = isYouTube ? 'YouTube' : 'Instagram';
           
           try {
-            await message.reply('🎥 Descargando video de YouTube, esto puede tomar unos minutos...');
+            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...`);
             
             const videoPath = await this.downloadYouTubeVideo(videoUrl);
             
@@ -289,8 +294,8 @@ class WhatsAppService {
                 const media = MessageMedia.fromFilePath(videoPath);
                 
                 // Enviar el video
-                await message.reply(media, undefined, { caption: '✅ Aquí está tu video de YouTube' });
-                console.log(`Video enviado exitosamente: ${videoPath}`);
+                await message.reply(media, undefined, { caption: `✅ Aquí está tu video de ${platform}` });
+                console.log(`Video de ${platform} enviado exitosamente: ${videoPath}`);
                 
                 // Eliminar el archivo después de enviarlo
                 setTimeout(() => {
@@ -304,7 +309,7 @@ class WhatsAppService {
               await message.reply('❌ Error al descargar el video. Verifica que el enlace sea correcto.');
             }
           } catch (error: any) {
-            console.error('Error procesando descarga de YouTube:', error);
+            console.error(`Error procesando descarga de ${platform}:`, error);
             await message.reply(`❌ Error al descargar el video: ${error.message || 'Error desconocido'}`);
           }
           
