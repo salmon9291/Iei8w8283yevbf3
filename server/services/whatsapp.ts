@@ -22,7 +22,7 @@ class WhatsAppService {
 
   constructor() {}
 
-  private async downloadYouTubeVideo(url: string, isInstagram: boolean = false): Promise<string | null> {
+  private async downloadYouTubeVideo(url: string): Promise<string | null> {
     try {
       // Crear directorio de descargas si no existe
       const downloadsDir = path.join(process.cwd(), 'downloads');
@@ -34,79 +34,28 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      if (isInstagram) {
-        // Descargar con yt-dlp
-        console.log('📥 Downloading Instagram video with yt-dlp...');
-        try {
-          // Obtener credenciales de Instagram de las variables de entorno
-          const igUsername = process.env.INSTAGRAM_USERNAME;
-          const igPassword = process.env.INSTAGRAM_PASSWORD;
+      // Para YouTube: usar cliente Android para evitar restricciones
+      const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
 
-          // Construir comando con o sin credenciales
-          let ytdlpCommand = 'yt-dlp --no-check-certificates';
-          
-          // Agregar autenticación si las credenciales están disponibles
-          if (igUsername && igPassword) {
-            console.log('Using Instagram credentials for authentication');
-            ytdlpCommand += ` --username "${igUsername}" --password "${igPassword}"`;
-          } else {
-            console.log('No Instagram credentials found, attempting public download');
-          }
-          
-          ytdlpCommand += ` -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
-            --merge-output-format mp4 \
-            --no-playlist \
-            --max-filesize 64M \
-            -o "${outputPath}" \
-            "${url}"`;
-          
-          console.log('yt-dlp command (credentials hidden):', ytdlpCommand.replace(igPassword || '', '***'));
+      console.log('Ejecutando comando yt-dlp para YouTube');
 
-          const ytdlpResult = await execAsync(ytdlpCommand);
-          console.log('yt-dlp result:', ytdlpResult);
+      const { stdout, stderr } = await execAsync(command, {
+        timeout: 180000
+      });
 
-          if (fs.existsSync(outputPath)) {
-            return outputPath;
-          }
+      if (stderr && !stderr.includes('Deleting original file')) {
+        console.log('yt-dlp stderr:', stderr);
+      }
 
-          throw new Error('Video file was not created after download');
-        } catch (ytdlpError: any) {
-          console.error('yt-dlp failed:', ytdlpError);
-          console.error('Error message:', ytdlpError.message);
-          console.error('Error stderr:', ytdlpError.stderr);
-          
-          // Mensaje de error más específico
-          const errorMsg = ytdlpError.stderr || ytdlpError.message || '';
-          if (errorMsg.includes('login required') || errorMsg.includes('rate-limit')) {
-            throw new Error('Este video requiere autenticación. Por favor configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets.');
-          }
-          
-          throw new Error(`Failed to download Instagram video: ${ytdlpError.message}`);
-        }
+      console.log('yt-dlp stdout:', stdout);
+
+      // Verificar que el archivo existe
+      if (fs.existsSync(outputPath)) {
+        console.log('Video descargado exitosamente:', outputPath);
+        return outputPath;
       } else {
-        // Para YouTube: usar cliente Android para evitar restricciones
-        const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
-
-        console.log('Ejecutando comando yt-dlp para YouTube');
-
-        const { stdout, stderr } = await execAsync(command, {
-          timeout: 180000
-        });
-
-        if (stderr && !stderr.includes('Deleting original file')) {
-          console.log('yt-dlp stderr:', stderr);
-        }
-
-        console.log('yt-dlp stdout:', stdout);
-
-        // Verificar que el archivo existe
-        if (fs.existsSync(outputPath)) {
-          console.log('Video descargado exitosamente:', outputPath);
-          return outputPath;
-        } else {
-          console.error('El archivo no fue creado');
-          return null;
-        }
+        console.error('El archivo no fue creado');
+        return null;
       }
     } catch (error: any) {
       console.error('Error en downloadYouTubeVideo:', error);
@@ -306,23 +255,16 @@ class WhatsAppService {
         const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/[^\s]+)/i;
         const youtubeMatch = message.body.match(youtubeDownloadRegex);
 
-        // Detectar comando de descarga de Instagram
-        const instagramDownloadRegex = /^\/descarga\s+ig\s+(https?:\/\/[^\s]+)/i;
-        const instagramMatch = message.body.match(instagramDownloadRegex);
-
         console.log('DEBUG - Buscando comando de descarga en:', message.body);
         console.log('DEBUG - YouTube Match:', youtubeMatch);
-        console.log('DEBUG - Instagram Match:', instagramMatch);
 
-        if (youtubeMatch || instagramMatch) {
-          const isYouTube = !!youtubeMatch;
-          const videoUrl = isYouTube ? youtubeMatch[1] : instagramMatch[1];
-          const platform = isYouTube ? 'YouTube' : 'Instagram';
+        if (youtubeMatch) {
+          const videoUrl = youtubeMatch[1];
 
           try {
-            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...${!isYouTube ? '\n\n💡 Tip: Para contenido privado, configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets.' : ''}`);
+            await message.reply('🎥 Descargando video de YouTube, esto puede tomar unos minutos...');
 
-            const videoPath = await this.downloadYouTubeVideo(videoUrl, !isYouTube);
+            const videoPath = await this.downloadYouTubeVideo(videoUrl);
 
             if (videoPath && fs.existsSync(videoPath)) {
               // Verificar el tamaño del archivo
@@ -338,8 +280,8 @@ class WhatsAppService {
                 const media = MessageMedia.fromFilePath(videoPath);
 
                 // Enviar el video
-                await message.reply(media, undefined, { caption: `✅ Aquí está tu video de ${platform}` });
-                console.log(`Video de ${platform} enviado exitosamente: ${videoPath}`);
+                await message.reply(media, undefined, { caption: '✅ Aquí está tu video de YouTube' });
+                console.log(`Video de YouTube enviado exitosamente: ${videoPath}`);
 
                 // Eliminar el archivo después de enviarlo
                 setTimeout(() => {
@@ -353,7 +295,7 @@ class WhatsAppService {
               await message.reply('❌ Error al descargar el video. Verifica que el enlace sea correcto.');
             }
           } catch (error: any) {
-            console.error(`Error procesando descarga de ${platform}:`, error);
+            console.error('Error procesando descarga de YouTube:', error);
             await message.reply(`❌ Error al descargar el video: ${error.message || 'Error desconocido'}`);
           }
 
