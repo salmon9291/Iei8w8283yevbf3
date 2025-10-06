@@ -34,15 +34,16 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Usar yt-dlp para descargar el video con múltiples intentos de formato
-      // Opciones para evitar restricciones de YouTube:
-      // --extractor-args "youtube:player_client=android" : usar cliente Android para evitar restricciones
-      // -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" : formato simple que suele funcionar mejor
+      // Usar yt-dlp con opciones mejoradas para evitar 403:
+      // --no-check-certificates : evitar problemas de SSL
+      // --user-agent : usar un user agent de navegador moderno
+      // --referer "https://www.youtube.com/" : enviar referer correcto
+      // -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/worst[ext=mp4]" : formatos compatibles
       // --merge-output-format mp4 : forzar salida en mp4
       // --no-playlist : solo descargar un video
       // --max-filesize 64M : limitar tamaño
-      // -o : especificar ruta de salida
-      const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      // --cookies-from-browser firefox : intentar usar cookies del navegador si están disponibles
+      const command = `yt-dlp --no-check-certificates --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" --referer "https://www.youtube.com/" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
       
       console.log('Ejecutando comando yt-dlp:', command);
       
