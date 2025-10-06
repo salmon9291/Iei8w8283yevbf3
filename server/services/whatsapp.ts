@@ -34,15 +34,15 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Usar cliente web (más estable y sin requerir PO Token)
-      // --extractor-args "youtube:player_client=web" : cliente web estándar
-      // -f "best[height<=720][ext=mp4][filesize<64M]/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/worst[ext=mp4]" : limitar calidad para evitar archivos grandes
+      // Usar cliente android para evitar restricciones SABR
+      // --extractor-args "youtube:player_client=android" : cliente android (más confiable)
+      // -f "best[height<=480][ext=mp4][filesize<50M]/worst[ext=mp4]" : limitar a 480p para asegurar descarga
       // --merge-output-format mp4 : forzar salida en mp4
       // --no-playlist : solo descargar un video
-      // --max-filesize 64M : limitar tamaño
+      // --max-filesize 50M : limitar tamaño para WhatsApp
       // --socket-timeout 30 : timeout de socket
       // --no-check-certificates : evitar problemas de SSL
-      const command = `yt-dlp --extractor-args "youtube:player_client=web" --no-check-certificates -f "best[height<=720][ext=mp4][filesize<64M]/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M --socket-timeout 30 -o "${outputPath}" "${url}"`;
+      const command = `yt-dlp --extractor-args "youtube:player_client=android" --no-check-certificates -f "best[height<=480][ext=mp4][filesize<50M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 50M --socket-timeout 30 -o "${outputPath}" "${url}"`;
       
       console.log('Ejecutando comando yt-dlp:', command);
       
