@@ -1,19 +1,39 @@
-2025/10/06-01:30:23.830 a4b Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-01:30:23.831 a4b Recovering log #1199
-2025/10/06-01:30:23.938 a4b Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001199.log 
-2025/10/06-01:30:24.773 a4f Level-0 table #1212: started
-2025/10/06-01:30:24.867 a4f Level-0 table #1212: 1220321 bytes OK
-2025/10/06-01:30:24.885 a4f Delete type=0 #1199
-2025/10/06-01:30:24.886 a4b Manual compaction at level-0 from '\x00r\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00s\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-01:30:27.731 a4d Compacting 1@1 + 9@2 files
-2025/10/06-01:30:27.894 a4d Generated table #1213@1: 85438 keys, 2234796 bytes
-2025/10/06-01:30:28.176 a4d Generated table #1214@1: 74172 keys, 2258816 bytes
-2025/10/06-01:30:28.265 a4d Generated table #1215@1: 2306 keys, 2149479 bytes
-2025/10/06-01:30:28.425 a4d Generated table #1216@1: 15901 keys, 2197881 bytes
-2025/10/06-01:30:28.682 a4d Generated table #1217@1: 21603 keys, 2206668 bytes
-2025/10/06-01:30:28.865 a4d Generated table #1218@1: 42674 keys, 2228838 bytes
-2025/10/06-01:30:29.287 a4d Generated table #1219@1: 36995 keys, 2288168 bytes
-2025/10/06-01:30:29.401 a4d Generated table #1220@1: 46299 keys, 2186127 bytes
-2025/10/06-01:30:29.563 a4d Generated table #1221@1: 82483 keys, 1791991 bytes
-2025/10/06-01:30:29.564 a4d Compacted 1@1 + 9@2 files => 19542764 bytes
-2025/10/06-01:30:29.571 a4d compacted to: files[ 0 0 9 0 0 0 0 ]
+2025/10/06-01:31:54.426 c2d Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-01:31:54.491 c2d Recovering log #1211
+2025/10/06-01:31:54.508 c2d Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001211.log 
+2025/10/06-01:31:54.509 c2d Delete type=2 #1201
+2025/10/06-01:31:54.509 c2d Delete type=2 #1202
+2025/10/06-01:31:54.509 c2d Delete type=2 #1203
+2025/10/06-01:31:54.509 c2d Delete type=2 #1204
+2025/10/06-01:31:54.509 c2d Delete type=2 #1205
+2025/10/06-01:31:54.509 c2d Delete type=2 #1206
+2025/10/06-01:31:54.509 c2d Delete type=2 #1207
+2025/10/06-01:31:54.509 c2d Delete type=2 #1208
+2025/10/06-01:31:54.509 c2d Delete type=2 #1209
+2025/10/06-01:31:54.509 c2d Delete type=2 #1212
+2025/10/06-01:31:55.645 c34 Level-0 table #1224: started
+2025/10/06-01:31:55.726 c34 Level-0 table #1224: 985403 bytes OK
+2025/10/06-01:31:55.741 c34 Delete type=0 #1211
+2025/10/06-01:31:55.742 c34 Manual compaction at level-0 from '\x00s\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00t\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-01:31:58.585 c2d Compacting 1@1 + 9@2 files
+2025/10/06-01:31:58.848 c2d Generated table #1225@1: 85574 keys, 2236418 bytes
+2025/10/06-01:31:59.049 c2d Generated table #1226@1: 75181 keys, 2259143 bytes
+2025/10/06-01:31:59.156 c2d Generated table #1227@1: 2455 keys, 2183335 bytes
+2025/10/06-01:31:59.325 c2d Generated table #1228@1: 14791 keys, 2190783 bytes
+2025/10/06-01:31:59.626 c2d Generated table #1229@1: 21754 keys, 2210538 bytes
+2025/10/06-01:31:59.787 c2d Generated table #1230@1: 40524 keys, 2227536 bytes
+2025/10/06-01:32:00.227 c2d Generated table #1231@1: 38319 keys, 2287961 bytes
+2025/10/06-01:32:00.361 c2d Generated table #1232@1: 42944 keys, 2185965 bytes
+2025/10/06-01:32:00.727 c2d Generated table #1233@1: 87897 keys, 1907597 bytes
+2025/10/06-01:32:00.728 c2d Compacted 1@1 + 9@2 files => 19689276 bytes
+2025/10/06-01:32:00.742 c2d compacted to: files[ 0 0 9 0 0 0 0 ]
+2025/10/06-01:32:00.742 c2d Delete type=2 #1213
+2025/10/06-01:32:00.743 c2d Delete type=2 #1214
+2025/10/06-01:32:00.743 c2d Delete type=2 #1215
+2025/10/06-01:32:00.743 c2d Delete type=2 #1216
+2025/10/06-01:32:00.743 c2d Delete type=2 #1217
+2025/10/06-01:32:00.744 c2d Delete type=2 #1218
+2025/10/06-01:32:00.744 c2d Delete type=2 #1219
+2025/10/06-01:32:00.744 c2d Delete type=2 #1220
+2025/10/06-01:32:00.744 c2d Delete type=2 #1221
+2025/10/06-01:32:00.744 c2d Delete type=2 #1224
