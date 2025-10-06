@@ -1,13 +1,52 @@
-2025/10/06-01:33:38.727 d6a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-01:33:38.727 d6a Recovering log #1223
-2025/10/06-01:33:38.837 d6a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001223.log 
-2025/10/06-01:33:39.723 d6a Level-0 table #1236: started
-2025/10/06-01:33:39.813 d6a Level-0 table #1236: 1818548 bytes OK
-2025/10/06-01:33:39.835 d6a Delete type=0 #1223
-2025/10/06-01:33:39.836 d63 Manual compaction at level-0 from '\x00t\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00u\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-01:33:42.551 d65 Compacting 1@1 + 9@2 files
-2025/10/06-01:33:42.762 d65 Generated table #1237@1: 85576 keys, 2234727 bytes
-2025/10/06-01:33:43.390 d65 Generated table #1238@1: 76061 keys, 2257578 bytes
-2025/10/06-01:33:43.672 d65 Generated table #1239@1: 3117 keys, 2149605 bytes
-2025/10/06-01:33:44.464 d65 compacted to: files[ 0 1 9 0 0 0 0 ]
-2025/10/06-01:33:44.464 d65 Compaction error: IO error: /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001240.ldb: FILE_ERROR_FAILED (ChromeMethodBFE: 3::WritableFileAppend::1)
+2025/10/06-01:44:43.934 262 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-01:44:43.934 262 Recovering log #1235
+2025/10/06-01:44:43.938 262 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001235.log 
+2025/10/06-01:44:43.938 262 Delete type=2 #1237
+2025/10/06-01:44:43.938 262 Delete type=2 #1238
+2025/10/06-01:44:43.938 262 Delete type=2 #1239
+2025/10/06-01:44:43.938 262 Delete type=2 #1240
+2025/10/06-01:44:45.281 262 Compacting 1@1 + 9@2 files
+2025/10/06-01:44:45.624 262 Generated table #1238@1: 85576 keys, 2234727 bytes
+2025/10/06-01:44:45.941 262 Generated table #1239@1: 76061 keys, 2257578 bytes
+2025/10/06-01:44:45.941 262 Level-0 table #1241: started
+2025/10/06-01:44:46.202 262 Level-0 table #1241: 1003966 bytes OK
+2025/10/06-01:44:46.556 262 Delete type=0 #1235
+2025/10/06-01:44:47.115 262 Generated table #1242@1: 3117 keys, 2149605 bytes
+2025/10/06-01:44:47.599 262 Generated table #1243@1: 10857 keys, 2170800 bytes
+2025/10/06-01:44:47.984 262 Generated table #1244@1: 22836 keys, 2215217 bytes
+2025/10/06-01:44:48.286 262 Generated table #1245@1: 33845 keys, 2220159 bytes
+2025/10/06-01:44:48.915 262 Generated table #1246@1: 43230 keys, 2282782 bytes
+2025/10/06-01:44:49.365 262 Generated table #1247@1: 32770 keys, 2190429 bytes
+2025/10/06-01:44:49.619 262 Generated table #1248@1: 103223 keys, 2238215 bytes
+2025/10/06-01:44:49.619 262 Compacted 1@1 + 9@2 files => 19959512 bytes
+2025/10/06-01:44:49.626 262 compacted to: files[ 1 0 9 0 0 0 0 ]
+2025/10/06-01:44:49.626 262 Manual compaction at level-0 from '\x00_\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00`\x00\x00\x00' @ 0 : 0; will stop at '\x00_\x03!\x06\x09\x94]qci\xd6lR\x9c\x00\x03\x00\x00\x00\x00\x00\xd0\x8f@' @ 3123137 : 0
+2025/10/06-01:44:49.626 262 Compacting 1@0 + 0@1 files
+2025/10/06-01:44:49.764 262 Generated table #1249@0: 76150 keys, 984199 bytes
+2025/10/06-01:44:49.764 262 Compacted 1@0 + 0@1 files => 984199 bytes
+2025/10/06-01:44:49.774 262 compacted to: files[ 0 1 9 0 0 0 0 ]
+2025/10/06-01:44:49.774 262 Delete type=2 #1241
+2025/10/06-01:44:49.774 262 Manual compaction at level-0 from '\x00_\x03!\x06\x09\x94]qci\xd6lR\x9c\x00\x03\x00\x00\x00\x00\x00\xd0\x8f@' @ 3123137 : 0 .. '\x00`\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-01:44:49.774 262 Manual compaction at level-1 from '\x00_\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00`\x00\x00\x00' @ 0 : 0; will stop at '\x00_\x03!\x06\x09\x94]qci\xd6lR\x9c\x00\x03\x00\x00\x00\x00\x00\xd0\x8f@' @ 3123137 : 0
+2025/10/06-01:44:49.774 262 Compacting 1@1 + 9@2 files
+2025/10/06-01:44:49.993 262 Generated table #1250@1: 85518 keys, 2235323 bytes
+2025/10/06-01:44:50.168 262 Generated table #1251@1: 76188 keys, 2258264 bytes
+2025/10/06-01:44:50.428 262 Generated table #1252@1: 3224 keys, 2149393 bytes
+2025/10/06-01:44:50.732 262 Generated table #1253@1: 10791 keys, 2170831 bytes
+2025/10/06-01:44:50.820 262 Generated table #1254@1: 22862 keys, 2216452 bytes
+2025/10/06-01:44:51.071 262 Generated table #1255@1: 33758 keys, 2220433 bytes
+2025/10/06-01:44:51.176 262 Generated table #1256@1: 43301 keys, 2283050 bytes
+2025/10/06-01:44:51.507 262 Generated table #1257@1: 60844 keys, 2175802 bytes
+2025/10/06-01:44:51.508 262 Compacted 1@1 + 9@2 files => 17709548 bytes
+2025/10/06-01:44:51.514 262 compacted to: files[ 0 0 8 0 0 0 0 ]
+2025/10/06-01:44:51.514 262 Delete type=2 #1238
+2025/10/06-01:44:51.515 262 Delete type=2 #1239
+2025/10/06-01:44:51.515 262 Delete type=2 #1242
+2025/10/06-01:44:51.515 262 Delete type=2 #1243
+2025/10/06-01:44:51.515 262 Delete type=2 #1244
+2025/10/06-01:44:51.515 262 Delete type=2 #1245
+2025/10/06-01:44:51.515 262 Delete type=2 #1246
+2025/10/06-01:44:51.515 262 Delete type=2 #1247
+2025/10/06-01:44:51.515 262 Delete type=2 #1248
+2025/10/06-01:44:51.515 262 Delete type=2 #1249
+2025/10/06-01:44:51.520 262 Manual compaction at level-1 from '\x00_\x03!\x06\x09\x94]qci\xd6lR\x9c\x00\x03\x00\x00\x00\x00\x00\xd0\x8f@' @ 3123137 : 0 .. '\x00`\x00\x00\x00' @ 0 : 0; will stop at (end)
