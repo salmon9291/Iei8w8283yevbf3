@@ -275,6 +275,12 @@ class WhatsAppService {
           const videoUrl = isYouTube ? youtubeMatch[1] : instagramMatch[1];
           const platform = isYouTube ? 'YouTube' : 'Instagram';
           
+          // Instagram requiere autenticación, informar al usuario
+          if (!isYouTube) {
+            await message.reply('❌ Lo siento, Instagram requiere autenticación para descargar videos. Por ahora solo funciona con YouTube.\n\n✅ Usa: `/descarga yt [enlace de YouTube]`');
+            return;
+          }
+          
           try {
             await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...`);
             
