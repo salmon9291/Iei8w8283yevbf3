@@ -1,3 +1,4 @@
+
 import { WhatsAppPanel } from "@/components/whatsapp-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Settings, MessageSquare, Key, Users, Trash2 } from "lucide-react";
+import { Loader2, Settings, MessageSquare, Key, Users, Trash2, Send } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 type SettingsType = {
@@ -28,6 +29,11 @@ export default function WhatsAppAdmin() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  
+  // Estado para envío de mensajes
+  const [selectedNumber, setSelectedNumber] = useState("");
+  const [messageToSend, setMessageToSend] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -112,6 +118,52 @@ export default function WhatsAppAdmin() {
     }
   };
 
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedNumber.trim() || !messageToSend.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor completa el número y el mensaje",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingMessage(true);
+
+    try {
+      const response = await fetch("/api/whatsapp/send-manual", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: selectedNumber,
+          message: messageToSend,
+          saveToHistory: true,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al enviar mensaje");
+
+      toast({
+        title: "✓ Mensaje enviado",
+        description: `Mensaje enviado a ${selectedNumber}`,
+      });
+
+      setMessageToSend("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el mensaje",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
   if (isLoadingSettings) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
@@ -123,6 +175,79 @@ export default function WhatsAppAdmin() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
       <div className="w-full max-w-2xl space-y-6">
+        {/* Tarjeta de Envío de Mensajes - Estilo WhatsApp */}
+        <Card className="border-green-200 shadow-lg">
+          <CardHeader className="bg-green-600 text-white">
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Enviar Mensaje Manual
+            </CardTitle>
+            <CardDescription className="text-green-50">
+              Envía mensajes directamente como si fuera WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                  Número de WhatsApp
+                </Label>
+                <Input
+                  id="phoneNumber"
+                  type="text"
+                  value={selectedNumber}
+                  onChange={(e) => setSelectedNumber(e.target.value)}
+                  placeholder="whatsapp_5213532310801"
+                  className="border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Ejemplo: whatsapp_5213532310801 (formato del username)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="messageContent" className="text-sm font-medium">
+                  Mensaje
+                </Label>
+                <Textarea
+                  id="messageContent"
+                  value={messageToSend}
+                  onChange={(e) => setMessageToSend(e.target.value)}
+                  placeholder="Escribe tu mensaje aquí..."
+                  className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Presiona Enter para enviar o Shift+Enter para nueva línea
+                </p>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={isSendingMessage || !selectedNumber.trim() || !messageToSend.trim()}
+              >
+                {isSendingMessage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar Mensaje
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
