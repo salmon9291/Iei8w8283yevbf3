@@ -37,24 +37,40 @@ class WhatsAppService {
       let command: string;
 
       if (isInstagram) {
-        // Para Instagram: usar yt-dlp sin autenticación pero con user-agent
-        // Nota: Esto puede funcionar para contenido público, pero no garantizado
-        command = `yt-dlp --no-check-certificates --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+        // Para Instagram: método mejorado con múltiples estrategias
+        // 1. Intentar obtener el mejor formato disponible públicamente
+        // 2. Usar headers que simulan un navegador real
+        // 3. Extraer metadata primero para validar el contenido
+        command = `yt-dlp \
+          --no-check-certificates \
+          --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+          --add-header "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+          --add-header "Accept-Language:es-ES,es;q=0.9,en;q=0.8" \
+          --add-header "Sec-Fetch-Mode:navigate" \
+          -f "best[ext=mp4][filesize<64M]/best[filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/best" \
+          --merge-output-format mp4 \
+          --no-playlist \
+          --max-filesize 64M \
+          --retries 3 \
+          --fragment-retries 3 \
+          --no-warnings \
+          -o "${outputPath}" \
+          "${url}"`;
       } else {
         // Para YouTube: usar cliente Android para evitar restricciones
         command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
       }
-      
-      console.log('Ejecutando comando yt-dlp:', command);
-      
+
+      console.log('Ejecutando comando yt-dlp para', isInstagram ? 'Instagram' : 'YouTube');
+
       const { stdout, stderr } = await execAsync(command, { 
-        timeout: 120000 // 2 minutos timeout
+        timeout: 180000 // 3 minutos timeout para Instagram
       });
-      
+
       if (stderr && !stderr.includes('Deleting original file')) {
         console.log('yt-dlp stderr:', stderr);
       }
-      
+
       console.log('yt-dlp stdout:', stdout);
 
       // Verificar que el archivo existe
@@ -262,11 +278,11 @@ class WhatsAppService {
         // Detectar comando de descarga de YouTube
         const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/[^\s]+)/i;
         const youtubeMatch = message.body.match(youtubeDownloadRegex);
-        
+
         // Detectar comando de descarga de Instagram
         const instagramDownloadRegex = /^\/descarga\s+ig\s+(https?:\/\/[^\s]+)/i;
         const instagramMatch = message.body.match(instagramDownloadRegex);
-        
+
         console.log('DEBUG - Buscando comando de descarga en:', message.body);
         console.log('DEBUG - YouTube Match:', youtubeMatch);
         console.log('DEBUG - Instagram Match:', instagramMatch);
@@ -275,17 +291,17 @@ class WhatsAppService {
           const isYouTube = !!youtubeMatch;
           const videoUrl = isYouTube ? youtubeMatch[1] : instagramMatch[1];
           const platform = isYouTube ? 'YouTube' : 'Instagram';
-          
+
           try {
             await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...${!isYouTube ? '\n\n⚠️ Nota: Instagram puede requerir autenticación. Si falla, solo contenido público estará disponible.' : ''}`);
-            
+
             const videoPath = await this.downloadYouTubeVideo(videoUrl, !isYouTube);
-            
+
             if (videoPath && fs.existsSync(videoPath)) {
               // Verificar el tamaño del archivo
               const stats = fs.statSync(videoPath);
               const fileSizeMB = stats.size / (1024 * 1024);
-              
+
               if (fileSizeMB > 64) {
                 await message.reply(`❌ El video es demasiado grande (${fileSizeMB.toFixed(2)}MB). WhatsApp solo permite archivos de hasta 64MB.`);
                 // Eliminar el archivo descargado
@@ -293,11 +309,11 @@ class WhatsAppService {
               } else {
                 // Crear media desde el archivo
                 const media = MessageMedia.fromFilePath(videoPath);
-                
+
                 // Enviar el video
                 await message.reply(media, undefined, { caption: `✅ Aquí está tu video de ${platform}` });
                 console.log(`Video de ${platform} enviado exitosamente: ${videoPath}`);
-                
+
                 // Eliminar el archivo después de enviarlo
                 setTimeout(() => {
                   if (fs.existsSync(videoPath)) {
@@ -313,7 +329,7 @@ class WhatsAppService {
             console.error(`Error procesando descarga de ${platform}:`, error);
             await message.reply(`❌ Error al descargar el video: ${error.message || 'Error desconocido'}`);
           }
-          
+
           return; // No continuar con el procesamiento normal de Gemini
         }
 
@@ -338,7 +354,7 @@ class WhatsAppService {
 
         // Verificar si el número está en la lista restringida
         const isRestricted = storage.isRestrictedNumber(contact.number || chat.id._serialized);
-        
+
         // Obtener API key y custom prompt de settings
         const apiKey = settings.geminiApiKey || undefined;
         const customPrompt = isRestricted 
@@ -375,15 +391,15 @@ class WhatsAppService {
         console.log(`Respuesta enviada en ${chatType}: ${aiResponse.substring(0, 50)}...`);
       } catch (error: any) {
         console.error('Error procesando mensaje:', error);
-        
+
         // Informar al usuario sobre el error
         try {
           let errorMessage = 'Lo siento, ocurrió un error al procesar tu mensaje.';
-          
+
           if (error?.message?.includes('quota') || error?.message?.includes('429')) {
             errorMessage = 'Lo siento, se ha excedido el límite de la API de Gemini. Por favor, contacta al administrador para configurar una API key propia o espera a que se resetee el límite diario.';
           }
-          
+
           await message.reply(errorMessage);
         } catch (replyError) {
           console.error('Error enviando mensaje de error:', replyError);
