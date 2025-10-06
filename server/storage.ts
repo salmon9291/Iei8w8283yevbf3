@@ -167,6 +167,10 @@ export class MemStorage implements IStorage {
     if (newSettings.restrictedPrompt !== undefined) {
       settingsToUpdate.restrictedPrompt = newSettings.restrictedPrompt;
     }
+    // Add adminPassword to settingsToUpdate if it's provided in newSettings
+    if (newSettings.adminPassword !== undefined) {
+      settingsToUpdate.adminPassword = newSettings.adminPassword;
+    }
 
     this.settings = {
       ...this.settings,

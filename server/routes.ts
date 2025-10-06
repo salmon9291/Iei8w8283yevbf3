@@ -195,6 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     geminiApiKey: z.string().optional(),
     restrictedNumbers: z.string().optional(),
     restrictedPrompt: z.string().optional(),
+    adminPassword: z.string().optional(),
   });
 
   app.post("/api/settings", async (req, res) => {
