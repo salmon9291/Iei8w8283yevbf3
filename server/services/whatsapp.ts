@@ -34,52 +34,85 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      let command: string;
-
       if (isInstagram) {
-        // Para Instagram: método mejorado con múltiples estrategias
-        // 1. Intentar obtener el mejor formato disponible públicamente
-        // 2. Usar headers que simulan un navegador real
-        // 3. Extraer metadata primero para validar el contenido
-        command = `yt-dlp \
-          --no-check-certificates \
-          --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-          --add-header "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
-          --add-header "Accept-Language:es-ES,es;q=0.9,en;q=0.8" \
-          --add-header "Sec-Fetch-Mode:navigate" \
-          -f "best[ext=mp4][filesize<64M]/best[filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/best" \
-          --merge-output-format mp4 \
-          --no-playlist \
-          --max-filesize 64M \
-          --retries 3 \
-          --fragment-retries 3 \
-          --no-warnings \
-          -o "${outputPath}" \
-          "${url}"`;
+        // Para Instagram: usar instagrapi (Python)
+        console.log('Usando instagrapi para descargar de Instagram');
+        
+        const pythonScript = path.join(process.cwd(), 'server', 'services', 'instagram_downloader.py');
+        const command = `python3 "${pythonScript}" "${url}" "${outputPath}"`;
+        
+        try {
+          const { stdout, stderr } = await execAsync(command, { 
+            timeout: 180000 // 3 minutos timeout
+          });
+
+          if (stderr) {
+            console.log('Python stderr:', stderr);
+          }
+
+          console.log('Python stdout:', stdout);
+
+          // Parsear la respuesta JSON del script de Python
+          const result = JSON.parse(stdout.trim());
+          
+          if (result.success) {
+            console.log('Video de Instagram descargado exitosamente:', result.path || outputPath);
+            return result.path || outputPath;
+          } else {
+            console.error('Error en descarga de Instagram:', result.message);
+            throw new Error(result.message);
+          }
+        } catch (error: any) {
+          // Si falla instagrapi, intentar con yt-dlp como fallback
+          console.log('Instagrapi falló, intentando con yt-dlp como fallback...');
+          
+          const ytdlpCommand = `yt-dlp \
+            --no-check-certificates \
+            --cookies-from-browser firefox \
+            -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
+            --merge-output-format mp4 \
+            --no-playlist \
+            --max-filesize 64M \
+            -o "${outputPath}" \
+            "${url}"`;
+          
+          const { stdout, stderr } = await execAsync(ytdlpCommand, { timeout: 180000 });
+          
+          if (stderr && !stderr.includes('Deleting original file')) {
+            console.log('yt-dlp stderr:', stderr);
+          }
+          
+          if (fs.existsSync(outputPath)) {
+            console.log('Video descargado con yt-dlp fallback');
+            return outputPath;
+          }
+          
+          throw error;
+        }
       } else {
         // Para YouTube: usar cliente Android para evitar restricciones
-        command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
-      }
+        const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
 
-      console.log('Ejecutando comando yt-dlp para', isInstagram ? 'Instagram' : 'YouTube');
+        console.log('Ejecutando comando yt-dlp para YouTube');
 
-      const { stdout, stderr } = await execAsync(command, { 
-        timeout: 180000 // 3 minutos timeout para Instagram
-      });
+        const { stdout, stderr } = await execAsync(command, { 
+          timeout: 180000
+        });
 
-      if (stderr && !stderr.includes('Deleting original file')) {
-        console.log('yt-dlp stderr:', stderr);
-      }
+        if (stderr && !stderr.includes('Deleting original file')) {
+          console.log('yt-dlp stderr:', stderr);
+        }
 
-      console.log('yt-dlp stdout:', stdout);
+        console.log('yt-dlp stdout:', stdout);
 
-      // Verificar que el archivo existe
-      if (fs.existsSync(outputPath)) {
-        console.log('Video descargado exitosamente:', outputPath);
-        return outputPath;
-      } else {
-        console.error('El archivo no fue creado');
-        return null;
+        // Verificar que el archivo existe
+        if (fs.existsSync(outputPath)) {
+          console.log('Video descargado exitosamente:', outputPath);
+          return outputPath;
+        } else {
+          console.error('El archivo no fue creado');
+          return null;
+        }
       }
     } catch (error: any) {
       console.error('Error en downloadYouTubeVideo:', error);
@@ -293,7 +326,7 @@ class WhatsAppService {
           const platform = isYouTube ? 'YouTube' : 'Instagram';
 
           try {
-            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...${!isYouTube ? '\n\n⚠️ Nota: Instagram puede requerir autenticación. Si falla, solo contenido público estará disponible.' : ''}`);
+            await message.reply(`🎥 Descargando video de ${platform}, esto puede tomar unos minutos...${!isYouTube ? '\n\n💡 Tip: Para contenido privado, configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets.' : ''}`);
 
             const videoPath = await this.downloadYouTubeVideo(videoUrl, !isYouTube);
 
