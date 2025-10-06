@@ -138,105 +138,58 @@ export function ChatInterface({ username }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4">
-      {/* Header con marca de Replit */}
-      <div className="text-center mb-6 pb-4 border-b border-[#2E3A52]">
-        <h1 className="text-3xl font-bold mb-2">
-          <span className="replit-brand">Replit AI Assistant</span>
-        </h1>
-        <p className="text-sm text-[#9BA4B5]">
-          Powered by <span className="text-[#F26430] font-semibold">Replit Agent</span> & <span className="text-[#569CD6] font-semibold">Assistant</span>
-        </p>
+    <div className="flex flex-col h-full max-w-3xl mx-auto p-4">
+      <div className="flex items-center justify-center mb-6">
+        <SimpleFace isSpeaking={isSpeaking} />
       </div>
 
-      <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 mb-6 bg-[#1C2333] border border-[#2E3A52]">
-          <TabsTrigger 
-            value="chat" 
-            className="data-[state=active]:bg-[#F26430] data-[state=active]:text-white"
+      <div className="bg-[#1C2333] border border-[#2E3A52] rounded-lg p-4">
+        {messages.length > 0 && (
+          <div className="mb-3">
+            {(() => {
+              const lastUserMessage = messages.filter(m => m.sender === 'user').slice(-1)[0];
+              return lastUserMessage ? (
+                <div className="text-sm bg-[#2E3A52] rounded-lg p-2">
+                  <span className="text-white">"{lastUserMessage.content}"</span>
+                </div>
+              ) : null;
+            })()}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+
+        <form onSubmit={handleSendMessage} className="flex space-x-2">
+          <Input
+            type="text"
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Escribe tu mensaje..."
+            className="flex-1 bg-[#0E1525] border-[#2E3A52] text-white placeholder-[#9BA4B5] focus:border-[#F26430] focus:ring-[#F26430]"
+            disabled={isSending}
+            data-testid="input-message"
+          />
+
+          <Button
+            type="submit"
+            disabled={!messageText.trim() || isSending}
+            className="bg-[#F26430] text-white hover:bg-[#569CD6] transition-colors px-4"
+            data-testid="button-send"
           >
-            <i className="fas fa-comments mr-2"></i>
-            Chat IA
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="chat" className="space-y-6">
-          <div className="flex items-center justify-center">
-            <div className="replit-pulse">
-              <SimpleFace isSpeaking={isSpeaking} />
-            </div>
-          </div>
-
-          <div className="bg-[#1C2333] border border-[#2E3A52] rounded-lg p-6">
-            {messages.length > 0 && (
-              <div className="mb-4">
-                {(() => {
-                  const lastUserMessage = messages.filter(m => m.sender === 'user').slice(-1)[0];
-                  return lastUserMessage ? (
-                    <div className="text-sm text-center bg-[#2E3A52] rounded-lg p-3">
-                      <span className="text-[#9BA4B5] text-xs block mb-1">Tu mensaje:</span>
-                      <span className="text-white">"{lastUserMessage.content}"</span>
-                    </div>
-                  ) : null;
-                })()}
-                <div ref={messagesEndRef} />
-              </div>
+            {isSending ? (
+              <i className="fas fa-spinner fa-spin"></i>
+            ) : (
+              <i className="fas fa-paper-plane"></i>
             )}
+          </Button>
+        </form>
 
-            <form onSubmit={handleSendMessage} className="flex space-x-3">
-              <Input
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Escribe tu mensaje aquí..."
-                className="flex-1 bg-[#0E1525] border-[#2E3A52] text-white placeholder-[#9BA4B5] focus:border-[#F26430] focus:ring-[#F26430]"
-                disabled={isSending}
-                data-testid="input-message"
-              />
-
-              <Button
-                type="submit"
-                disabled={!messageText.trim() || isSending}
-                className="bg-[#F26430] text-white hover:bg-[#569CD6] transition-colors duration-300 px-6 font-semibold"
-                data-testid="button-send"
-              >
-                {isSending ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                    Enviando...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-paper-plane mr-2"></i>
-                    Enviar
-                  </>
-                )}
-              </Button>
-            </form>
-
-            {error && (
-              <div className="mt-3 text-[#E06C75] text-sm bg-[#2E3A52] rounded p-3 border border-[#E06C75]">
-                <i className="fas fa-exclamation-triangle mr-2"></i>
-                Error: {error}
-              </div>
-            )}
+        {error && (
+          <div className="mt-2 text-[#E06C75] text-xs bg-[#2E3A52] rounded p-2">
+            Error: {error}
           </div>
-
-          {/* Footer con créditos */}
-          <div className="text-center text-xs text-[#9BA4B5] pt-4 border-t border-[#2E3A52]">
-            <p>
-              Creado con <i className="fas fa-heart text-[#F26430]"></i> usando{" "}
-              <span className="text-[#F26430] font-semibold">Replit Agent</span> y{" "}
-              <span className="text-[#569CD6] font-semibold">Replit Assistant</span>
-            </p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="whatsapp">
-          <WhatsAppPanel />
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 }

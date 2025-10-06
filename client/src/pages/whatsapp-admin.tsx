@@ -242,9 +242,6 @@ export default function WhatsAppAdmin() {
                   className="bg-[#2E3A52] border-[#2E3A52] text-[#F5F9FC] focus:border-[#F26430] focus:ring-[#F26430]"
                   autoFocus
                 />
-                <p className="text-xs text-[#9BA4B5]">
-                  Contraseña por defecto: <code className="bg-[#2E3A52] px-1 rounded">SWzv95VBf6</code>
-                </p>
               </div>
               <Button 
                 type="submit" 
