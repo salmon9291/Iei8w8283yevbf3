@@ -68,7 +68,6 @@ class WhatsAppService {
           
           const ytdlpCommand = `yt-dlp \
             --no-check-certificates \
-            --cookies-from-browser firefox \
             -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
             --merge-output-format mp4 \
             --no-playlist \
