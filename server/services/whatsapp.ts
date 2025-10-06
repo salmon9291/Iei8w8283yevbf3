@@ -35,39 +35,32 @@ class WhatsAppService {
       const outputPath = path.join(downloadsDir, outputFileName);
 
       if (isInstagram) {
-        // Para Instagram: usar instagrapi (Python)
-        console.log('Usando instagrapi para descargar de Instagram');
-        
-        const pythonScript = path.join(process.cwd(), 'server', 'services', 'instagram_downloader.py');
-        const command = `python3 "${pythonScript}" "${url}" "${outputPath}"`;
-        
+        // Descargar con yt-dlp
+        console.log('📥 Downloading Instagram video with yt-dlp...');
         try {
-          const { stdout, stderr } = await execAsync(command, { 
-            timeout: 180000 // 3 minutos timeout
-          });
+          const ytdlpCommand = `yt-dlp \
+            --no-check-certificates \
+            -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
+            --merge-output-format mp4 \
+            --no-playlist \
+            --max-filesize 64M \
+            -o "${outputPath}" \
+            "${url}"`;
+          console.log('yt-dlp command:', ytdlpCommand);
 
-          if (stderr) {
-            console.log('Python stderr:', stderr);
+          const ytdlpResult = await execAsync(ytdlpCommand);
+          console.log('yt-dlp result:', ytdlpResult);
+
+          if (fs.existsSync(outputPath)) {
+            return outputPath;
           }
 
-          console.log('Python stdout:', stdout);
-
-          // Parsear la respuesta JSON del script de Python
-          const result = JSON.parse(stdout.trim());
-          
-          if (result.success) {
-            console.log('Video de Instagram descargado exitosamente:', result.path || outputPath);
-            return result.path || outputPath;
-          } else {
-            console.error('Error en descarga de Instagram:', result.message);
-            throw new Error(result.message);
-          }
-        } catch (error: any) {
-          console.error('Error en instagrapi:', error);
-          
-          // No intentar fallback de yt-dlp para Instagram, ya que también requiere autenticación
-          // Devolver el error específico de instagrapi
-          throw new Error('No se pudo descargar el video de Instagram. Verifica que hayas configurado correctamente INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets, o que el contenido sea público.');
+          throw new Error('Video file was not created after download');
+        } catch (ytdlpError: any) {
+          console.error('yt-dlp failed:', ytdlpError);
+          console.error('Error message:', ytdlpError.message);
+          console.error('Error stderr:', ytdlpError.stderr);
+          throw new Error(`Failed to download Instagram video: ${ytdlpError.message}`);
         }
       } else {
         // Para YouTube: usar cliente Android para evitar restricciones
@@ -75,7 +68,7 @@ class WhatsAppService {
 
         console.log('Ejecutando comando yt-dlp para YouTube');
 
-        const { stdout, stderr } = await execAsync(command, { 
+        const { stdout, stderr } = await execAsync(command, {
           timeout: 180000
         });
 
@@ -358,11 +351,11 @@ class WhatsAppService {
 
         // Get current date for context
         const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        const dateStr = now.toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         });
 
         // Verificar si el número está en la lista restringida
@@ -370,13 +363,13 @@ class WhatsAppService {
 
         // Obtener API key y custom prompt de settings
         const apiKey = settings.geminiApiKey || undefined;
-        const customPrompt = isRestricted 
+        const customPrompt = isRestricted
           ? (settings.restrictedPrompt || undefined)
           : (settings.customPrompt || undefined);
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
-          message.body, 
+          message.body,
           userName,
           customPrompt,
           conversationHistory,
