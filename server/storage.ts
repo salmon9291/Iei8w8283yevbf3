@@ -34,6 +34,7 @@ export class MemStorage implements IStorage {
       geminiApiKey: null,
       restrictedNumbers: null,
       restrictedPrompt: null,
+      adminPassword: 'SWzv95VBf6',
     };
     this.usersFilePath = path.join(process.cwd(), "data", "users.json");
     this.messagesFilePath = path.join(process.cwd(), "data", "messages.json");

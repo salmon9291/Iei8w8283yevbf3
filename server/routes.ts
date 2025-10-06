@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Obtener historial de conversación ANTES de guardar el nuevo mensaje
       const conversationHistory = await storage.getMessages(username);
-      
+
       // Obtener configuración para prompt personalizado y API key
       const settings = await storage.getSettings();
       const customPrompt = settings.customPrompt || undefined;
@@ -39,8 +39,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate AI response con historial completo (sin duplicar el mensaje actual)
       const aiResponse = await generateChatResponse(
-        content, 
-        username, 
+        content,
+        username,
         customPrompt,
         conversationHistory,
         apiKey
@@ -158,10 +158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/whatsapp/send-manual", async (req, res) => {
     try {
       const { to, message, saveToHistory } = sendManualMessageSchema.parse(req.body);
-      
+
       // Enviar el mensaje
       await whatsappService.sendMessage(to, message);
-      
+
       // Guardar en el historial si se especifica
       if (saveToHistory) {
         await storage.createMessage({
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: to,
         });
       }
-      
+
       res.json({ message: "Mensaje manual enviado exitosamente" });
     } catch (error) {
       console.error("Error enviando mensaje manual:", error);
@@ -202,12 +202,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const settingsUpdate = updateSettingsSchema.parse(req.body);
       const settings = await storage.updateSettings(settingsUpdate);
-      
+
       // Actualizar prompt en el servicio de WhatsApp si cambió
       if (settingsUpdate.customPrompt !== undefined) {
         whatsappService.setCustomPrompt(settingsUpdate.customPrompt);
       }
-      
+
       res.json(settings);
     } catch (error) {
       console.error("Error actualizando settings:", error);
@@ -266,9 +266,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/clear-all", async (req, res) => {
     try {
       await storage.clearAllMessages();
-      
-      res.json({ 
-        message: "Toda la memoria de mensajes ha sido limpiada exitosamente" 
+
+      res.json({
+        message: "Toda la memoria de mensajes ha sido limpiada exitosamente"
       });
     } catch (error: any) {
       console.error("Error limpiando mensajes:", error);
@@ -281,12 +281,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username } = req.params;
       const messages = await storage.getMessages(username);
-      
+
       // Filter out system instructions
       const cleanedMessages = messages.filter((msg: any) => {
         const content = msg.content || '';
-        const isSystemInstruction = 
-          content.includes('[INSTRUCCIONES DEL SISTEMA') || 
+        const isSystemInstruction =
+          content.includes('[INSTRUCCIONES DEL SISTEMA') ||
           content.includes('Siguiendo las nuevas instrucciones') ||
           content.includes('Entendido. Estoy listo') ||
           content.includes('Eres un asistente de IA') ||
@@ -294,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           content.startsWith('Eres ') && content.includes('Tu nombre es') ||
           content.includes('INFORMACIÓN IMPORTANTE: Hoy es') ||
           (content.length > 200 && content.includes('responde') && content.includes('asistente'));
-        
+
         return !isSystemInstruction;
       });
 
@@ -308,10 +308,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         removed: messages.length - cleanedMessages.length,
-        remaining: cleanedMessages.length 
+        remaining: cleanedMessages.length
       });
     } catch (error) {
       console.error("Error cleaning system instructions:", error);
