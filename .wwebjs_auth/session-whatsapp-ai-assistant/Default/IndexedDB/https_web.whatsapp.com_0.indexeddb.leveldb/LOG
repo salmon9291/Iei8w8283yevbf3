@@ -1,31 +1,31 @@
-2025/10/06-00:56:52.976 66a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-00:56:52.978 66a Recovering log #1071
-2025/10/06-00:56:53.068 66a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001071.log 
-2025/10/06-00:56:54.109 672 Level-0 table #1085: started
-2025/10/06-00:56:54.164 672 Level-0 table #1085: 812908 bytes OK
-2025/10/06-00:56:54.177 672 Delete type=0 #1071
-2025/10/06-00:56:54.179 66a Manual compaction at level-0 from '\x00u\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00v\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-00:56:56.998 66b Compacting 1@1 + 10@2 files
-2025/10/06-00:56:57.224 66b Generated table #1086@1: 85275 keys, 2235980 bytes
-2025/10/06-00:56:57.505 66b Generated table #1087@1: 82711 keys, 2265931 bytes
-2025/10/06-00:56:57.579 66b Generated table #1088@1: 7408 keys, 2156939 bytes
-2025/10/06-00:56:57.685 66b Generated table #1089@1: 8974 keys, 2162458 bytes
-2025/10/06-00:56:57.875 66b Generated table #1090@1: 23376 keys, 2222424 bytes
-2025/10/06-00:56:58.158 66b Generated table #1091@1: 23882 keys, 2208361 bytes
-2025/10/06-00:56:58.479 66b Generated table #1092@1: 51684 keys, 2272578 bytes
-2025/10/06-00:56:58.641 66b Generated table #1093@1: 25754 keys, 2220542 bytes
-2025/10/06-00:56:58.789 66b Generated table #1094@1: 89626 keys, 2236350 bytes
-2025/10/06-00:56:58.884 66b Generated table #1095@1: 32737 keys, 727003 bytes
-2025/10/06-00:56:58.885 66b Compacted 1@1 + 10@2 files => 20708566 bytes
-2025/10/06-00:56:58.891 66b compacted to: files[ 0 0 10 0 0 0 0 ]
-2025/10/06-00:56:58.891 66b Delete type=2 #1073
-2025/10/06-00:56:58.892 66b Delete type=2 #1074
-2025/10/06-00:56:58.892 66b Delete type=2 #1075
-2025/10/06-00:56:58.892 66b Delete type=2 #1076
-2025/10/06-00:56:58.892 66b Delete type=2 #1077
-2025/10/06-00:56:58.892 66b Delete type=2 #1078
-2025/10/06-00:56:58.892 66b Delete type=2 #1079
-2025/10/06-00:56:58.892 66b Delete type=2 #1080
-2025/10/06-00:56:58.892 66b Delete type=2 #1081
-2025/10/06-00:56:58.892 66b Delete type=2 #1082
-2025/10/06-00:56:58.892 66b Delete type=2 #1085
+2025/10/06-00:59:48.163 7eb Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-00:59:48.164 7eb Recovering log #1084
+2025/10/06-00:59:48.181 7eb Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001084.log 
+2025/10/06-00:59:48.998 7eb Level-0 table #1098: started
+2025/10/06-00:59:49.103 7eb Level-0 table #1098: 1003706 bytes OK
+2025/10/06-00:59:49.151 7eb Delete type=0 #1084
+2025/10/06-00:59:49.152 7eb Manual compaction at level-0 from '\x00v\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00w\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-00:59:51.863 7eb Compacting 1@1 + 10@2 files
+2025/10/06-00:59:52.150 7eb Generated table #1099@1: 85275 keys, 2234403 bytes
+2025/10/06-00:59:52.374 7eb Generated table #1100@1: 83048 keys, 2266190 bytes
+2025/10/06-00:59:52.514 7eb Generated table #1101@1: 8594 keys, 2158810 bytes
+2025/10/06-00:59:52.569 7eb Generated table #1102@1: 7269 keys, 2154932 bytes
+2025/10/06-00:59:52.700 7eb Generated table #1103@1: 23967 keys, 2226331 bytes
+2025/10/06-00:59:52.861 7eb Generated table #1104@1: 21192 keys, 2206425 bytes
+2025/10/06-00:59:53.185 7eb Generated table #1105@1: 53564 keys, 2270861 bytes
+2025/10/06-00:59:53.328 7eb Generated table #1106@1: 27570 keys, 2228947 bytes
+2025/10/06-00:59:53.825 7eb Generated table #1107@1: 83223 keys, 2227689 bytes
+2025/10/06-00:59:53.916 7eb Generated table #1108@1: 40029 keys, 885286 bytes
+2025/10/06-00:59:53.916 7eb Compacted 1@1 + 10@2 files => 20859874 bytes
+2025/10/06-00:59:53.960 7eb compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/10/06-00:59:53.960 7eb Delete type=2 #1086
+2025/10/06-00:59:53.960 7eb Delete type=2 #1087
+2025/10/06-00:59:53.960 7eb Delete type=2 #1088
+2025/10/06-00:59:53.960 7eb Delete type=2 #1089
+2025/10/06-00:59:53.960 7eb Delete type=2 #1090
+2025/10/06-00:59:53.960 7eb Delete type=2 #1091
+2025/10/06-00:59:53.961 7eb Delete type=2 #1092
+2025/10/06-00:59:53.961 7eb Delete type=2 #1093
+2025/10/06-00:59:53.961 7eb Delete type=2 #1094
+2025/10/06-00:59:53.961 7eb Delete type=2 #1095
+2025/10/06-00:59:53.961 7eb Delete type=2 #1098
