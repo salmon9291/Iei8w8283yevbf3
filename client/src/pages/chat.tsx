@@ -129,17 +129,58 @@ export default function Chat() {
   // and also about making animations more vivid, I will apply a class that implies vividness to the main container.
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white animate-fadeIn">
-      {/* Assuming SimpleFace would be rendered here, its container would get the 'floating' class */}
-      {/* Since SimpleFace is not defined or imported in the original code for this return path, */}
-      {/* and the change snippet applies 'floating' to a div containing SimpleFace, */}
-      {/* we'll simulate that by applying a vivid animation to the main container instead. */}
-      {/* If SimpleFace were to be included:
-        <div className="floating animate-pulse">
-          <SimpleFace isSpeaking={isSpeaking} />
+    <div className="flex flex-col h-screen bg-[#0E1525] text-white relative overflow-hidden">
+      {/* Fondo decorativo con marca de Replit */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#F26430] opacity-5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#569CD6] opacity-5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="text-9xl font-bold opacity-[0.02] replit-brand select-none">REPLIT</div>
         </div>
-      */}
-      <ChatInterface username={username} />
+      </div>
+
+      {/* Barra superior con logo de Replit */}
+      <div className="border-b border-[#2E3A52] bg-[#1C2333] px-6 py-4 relative z-10">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#F26430] to-[#569CD6] rounded-lg flex items-center justify-center text-white font-bold text-xl">
+              R
+            </div>
+            <div>
+              <h1 className="text-xl font-bold replit-brand">Replit AI Platform</h1>
+              <p className="text-xs text-[#9BA4B5]">Built with Agent & Assistant</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="px-3 py-1 bg-[#2E3A52] rounded-full text-xs text-[#9BA4B5]">
+              <i className="fas fa-user mr-2"></i>
+              {username}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="flex-1 relative z-10">
+        <ChatInterface username={username} />
+      </div>
+
+      {/* Footer con créditos */}
+      <div className="border-t border-[#2E3A52] bg-[#1C2333] px-6 py-3 relative z-10">
+        <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[#9BA4B5]">
+          <div className="flex items-center space-x-4">
+            <span>© 2025 Replit AI Assistant</span>
+            <span className="hidden md:inline">•</span>
+            <span className="hidden md:inline">Powered by Replit Agent & Assistant</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-[#F26430] rounded-full animate-pulse"></div>
+              <span className="text-[#F26430]">Live</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
