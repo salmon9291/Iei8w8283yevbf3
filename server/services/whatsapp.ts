@@ -63,30 +63,11 @@ class WhatsAppService {
             throw new Error(result.message);
           }
         } catch (error: any) {
-          // Si falla instagrapi, intentar con yt-dlp como fallback
-          console.log('Instagrapi falló, intentando con yt-dlp como fallback...');
+          console.error('Error en instagrapi:', error);
           
-          const ytdlpCommand = `yt-dlp \
-            --no-check-certificates \
-            -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
-            --merge-output-format mp4 \
-            --no-playlist \
-            --max-filesize 64M \
-            -o "${outputPath}" \
-            "${url}"`;
-          
-          const { stdout, stderr } = await execAsync(ytdlpCommand, { timeout: 180000 });
-          
-          if (stderr && !stderr.includes('Deleting original file')) {
-            console.log('yt-dlp stderr:', stderr);
-          }
-          
-          if (fs.existsSync(outputPath)) {
-            console.log('Video descargado con yt-dlp fallback');
-            return outputPath;
-          }
-          
-          throw error;
+          // No intentar fallback de yt-dlp para Instagram, ya que también requiere autenticación
+          // Devolver el error específico de instagrapi
+          throw new Error('No se pudo descargar el video de Instagram. Verifica que hayas configurado correctamente INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets, o que el contenido sea público.');
         }
       } else {
         // Para YouTube: usar cliente Android para evitar restricciones

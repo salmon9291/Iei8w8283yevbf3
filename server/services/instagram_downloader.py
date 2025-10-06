@@ -3,7 +3,7 @@ import os
 import sys
 import json
 from instagrapi import Client
-from instagrapi.exceptions import LoginRequired, PleaseWaitFewMinutes
+from instagrapi.exceptions import LoginRequired, PleaseWaitFewMinutes, ClientError
 
 def download_instagram_video(url: str, output_path: str) -> dict:
     """
@@ -19,61 +19,69 @@ def download_instagram_video(url: str, output_path: str) -> dict:
     try:
         cl = Client()
         
-        # Intentar login anónimo o usar credenciales si están disponibles
-        # Para uso público, intentamos sin login primero
-        try:
-            # Extraer el media_pk de la URL
-            media_pk = cl.media_pk_from_url(url)
-            
-            # Intentar obtener información del media sin login
-            media_info = cl.media_info(media_pk)
-            
-            # Verificar que sea un video
-            if media_info.media_type != 2 and media_info.media_type != 8:  # 2 = video, 8 = album con video
+        # Obtener credenciales de las variables de entorno
+        username = os.getenv('INSTAGRAM_USERNAME')
+        password = os.getenv('INSTAGRAM_PASSWORD')
+        
+        # Si hay credenciales, hacer login primero
+        if username and password:
+            try:
+                print(f"Intentando login con usuario: {username}", file=sys.stderr)
+                cl.login(username, password)
+                print("Login exitoso", file=sys.stderr)
+            except Exception as login_error:
+                print(f"Error en login: {str(login_error)}", file=sys.stderr)
                 return {
                     'success': False,
-                    'message': 'El contenido no es un video'
+                    'message': f'Error al iniciar sesión en Instagram: {str(login_error)}'
                 }
-            
-            # Descargar el video
+        
+        # Extraer el media_pk de la URL
+        try:
+            media_pk = cl.media_pk_from_url(url)
+            print(f"Media PK extraído: {media_pk}", file=sys.stderr)
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error al extraer ID del video: {str(e)}'
+            }
+        
+        # Obtener información del media
+        try:
+            media_info = cl.media_info(media_pk)
+            print(f"Información del media obtenida, tipo: {media_info.media_type}", file=sys.stderr)
+        except LoginRequired:
+            return {
+                'success': False,
+                'message': 'El contenido requiere autenticación. Configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets.'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error al obtener información del video: {str(e)}'
+            }
+        
+        # Verificar que sea un video
+        if media_info.media_type != 2 and media_info.media_type != 8:  # 2 = video, 8 = album con video
+            return {
+                'success': False,
+                'message': 'El contenido no es un video'
+            }
+        
+        # Descargar el video
+        try:
             downloaded_path = cl.video_download(media_pk, output_path)
+            print(f"Video descargado en: {downloaded_path}", file=sys.stderr)
             
             return {
                 'success': True,
-                'message': 'Video descargado exitosamente',
+                'message': 'Video descargado exitosamente' + (' (con autenticación)' if username else ''),
                 'path': str(downloaded_path)
             }
-            
-        except LoginRequired:
-            # Si requiere login, intentar con credenciales de variables de entorno
-            username = os.getenv('INSTAGRAM_USERNAME')
-            password = os.getenv('INSTAGRAM_PASSWORD')
-            
-            if not username or not password:
-                return {
-                    'success': False,
-                    'message': 'El contenido requiere autenticación. Configure INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en las variables de entorno.'
-                }
-            
-            # Login con credenciales
-            cl.login(username, password)
-            
-            # Reintentar descarga
-            media_pk = cl.media_pk_from_url(url)
-            media_info = cl.media_info(media_pk)
-            
-            if media_info.media_type != 2 and media_info.media_type != 8:
-                return {
-                    'success': False,
-                    'message': 'El contenido no es un video'
-                }
-            
-            downloaded_path = cl.video_download(media_pk, output_path)
-            
+        except Exception as e:
             return {
-                'success': True,
-                'message': 'Video descargado exitosamente (con autenticación)',
-                'path': str(downloaded_path)
+                'success': False,
+                'message': f'Error al descargar el video: {str(e)}'
             }
             
     except PleaseWaitFewMinutes as e:
@@ -81,10 +89,15 @@ def download_instagram_video(url: str, output_path: str) -> dict:
             'success': False,
             'message': f'Instagram solicita esperar. Intenta de nuevo en unos minutos: {str(e)}'
         }
+    except ClientError as e:
+        return {
+            'success': False,
+            'message': f'Error de cliente de Instagram: {str(e)}'
+        }
     except Exception as e:
         return {
             'success': False,
-            'message': f'Error al descargar: {str(e)}'
+            'message': f'Error inesperado: {str(e)}'
         }
 
 if __name__ == "__main__":
