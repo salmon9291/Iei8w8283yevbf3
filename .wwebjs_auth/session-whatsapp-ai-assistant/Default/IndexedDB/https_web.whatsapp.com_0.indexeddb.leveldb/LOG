@@ -1,40 +1,19 @@
-2025/10/06-01:26:46.609 510 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-01:26:46.610 510 Recovering log #1198
-2025/10/06-01:26:46.639 510 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001198.log 
-2025/10/06-01:26:46.639 510 Delete type=2 #1201
-2025/10/06-01:26:46.639 510 Delete type=2 #1202
-2025/10/06-01:26:46.639 510 Delete type=2 #1203
-2025/10/06-01:26:46.639 510 Delete type=2 #1204
-2025/10/06-01:26:46.640 510 Delete type=2 #1205
-2025/10/06-01:26:46.640 510 Delete type=2 #1206
-2025/10/06-01:26:46.640 510 Delete type=2 #1207
-2025/10/06-01:26:46.640 510 Delete type=2 #1208
-2025/10/06-01:26:46.640 510 Delete type=2 #1209
-2025/10/06-01:26:46.640 510 Delete type=2 #1210
-2025/10/06-01:26:46.640 510 Delete type=2 #1211
-2025/10/06-01:26:47.851 510 Level-0 table #1200: started
-2025/10/06-01:26:47.924 510 Level-0 table #1200: 1039261 bytes OK
-2025/10/06-01:26:47.940 510 Delete type=0 #1198
-2025/10/06-01:26:47.944 510 Manual compaction at level-0 from '\x00q\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00r\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-01:26:51.063 516 Compacting 1@1 + 9@2 files
-2025/10/06-01:26:51.479 516 Generated table #1201@1: 85529 keys, 2236275 bytes
-2025/10/06-01:26:51.664 516 Generated table #1202@1: 72373 keys, 2254298 bytes
-2025/10/06-01:26:51.775 516 Generated table #1203@1: 2309 keys, 2150172 bytes
-2025/10/06-01:26:51.869 516 Generated table #1204@1: 17527 keys, 2207505 bytes
-2025/10/06-01:26:52.012 516 Generated table #1205@1: 21541 keys, 2205521 bytes
-2025/10/06-01:26:52.666 516 Generated table #1206@1: 45111 keys, 2234686 bytes
-2025/10/06-01:26:52.897 516 Generated table #1207@1: 37353 keys, 2285799 bytes
-2025/10/06-01:26:52.976 516 Generated table #1208@1: 51361 keys, 2189159 bytes
-2025/10/06-01:26:53.074 516 Generated table #1209@1: 72267 keys, 1574576 bytes
-2025/10/06-01:26:53.074 516 Compacted 1@1 + 9@2 files => 19337991 bytes
-2025/10/06-01:26:53.127 516 compacted to: files[ 0 0 9 0 0 0 0 ]
-2025/10/06-01:26:53.128 516 Delete type=2 #966
-2025/10/06-01:26:53.128 516 Delete type=2 #967
-2025/10/06-01:26:53.128 516 Delete type=2 #968
-2025/10/06-01:26:53.128 516 Delete type=2 #969
-2025/10/06-01:26:53.128 516 Delete type=2 #970
-2025/10/06-01:26:53.128 516 Delete type=2 #971
-2025/10/06-01:26:53.128 516 Delete type=2 #972
-2025/10/06-01:26:53.128 516 Delete type=2 #973
-2025/10/06-01:26:53.128 516 Delete type=2 #974
-2025/10/06-01:26:53.128 516 Delete type=2 #1200
+2025/10/06-01:30:23.830 a4b Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-01:30:23.831 a4b Recovering log #1199
+2025/10/06-01:30:23.938 a4b Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001199.log 
+2025/10/06-01:30:24.773 a4f Level-0 table #1212: started
+2025/10/06-01:30:24.867 a4f Level-0 table #1212: 1220321 bytes OK
+2025/10/06-01:30:24.885 a4f Delete type=0 #1199
+2025/10/06-01:30:24.886 a4b Manual compaction at level-0 from '\x00r\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00s\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-01:30:27.731 a4d Compacting 1@1 + 9@2 files
+2025/10/06-01:30:27.894 a4d Generated table #1213@1: 85438 keys, 2234796 bytes
+2025/10/06-01:30:28.176 a4d Generated table #1214@1: 74172 keys, 2258816 bytes
+2025/10/06-01:30:28.265 a4d Generated table #1215@1: 2306 keys, 2149479 bytes
+2025/10/06-01:30:28.425 a4d Generated table #1216@1: 15901 keys, 2197881 bytes
+2025/10/06-01:30:28.682 a4d Generated table #1217@1: 21603 keys, 2206668 bytes
+2025/10/06-01:30:28.865 a4d Generated table #1218@1: 42674 keys, 2228838 bytes
+2025/10/06-01:30:29.287 a4d Generated table #1219@1: 36995 keys, 2288168 bytes
+2025/10/06-01:30:29.401 a4d Generated table #1220@1: 46299 keys, 2186127 bytes
+2025/10/06-01:30:29.563 a4d Generated table #1221@1: 82483 keys, 1791991 bytes
+2025/10/06-01:30:29.564 a4d Compacted 1@1 + 9@2 files => 19542764 bytes
+2025/10/06-01:30:29.571 a4d compacted to: files[ 0 0 9 0 0 0 0 ]
