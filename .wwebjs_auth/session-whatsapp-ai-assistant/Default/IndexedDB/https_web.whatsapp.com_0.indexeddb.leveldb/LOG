@@ -1,31 +1,31 @@
-2025/10/06-00:46:47.390 2ad Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-00:46:47.391 2ad Recovering log #1045
-2025/10/06-00:46:47.554 2ad Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001045.log 
-2025/10/06-00:46:48.168 2ae Level-0 table #1059: started
-2025/10/06-00:46:48.356 2ae Level-0 table #1059: 1064129 bytes OK
-2025/10/06-00:46:48.370 2ae Delete type=0 #1045
-2025/10/06-00:46:48.371 2ae Manual compaction at level-0 from '\x00s\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00t\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-00:46:51.349 2b3 Compacting 1@1 + 10@2 files
-2025/10/06-00:46:51.580 2b3 Generated table #1060@1: 84662 keys, 2234884 bytes
-2025/10/06-00:46:51.868 2b3 Generated table #1061@1: 80288 keys, 2264055 bytes
-2025/10/06-00:46:51.982 2b3 Generated table #1062@1: 7045 keys, 2158381 bytes
-2025/10/06-00:46:52.100 2b3 Generated table #1063@1: 11253 keys, 2176126 bytes
-2025/10/06-00:46:52.219 2b3 Generated table #1064@1: 22944 keys, 2216092 bytes
-2025/10/06-00:46:52.342 2b3 Generated table #1065@1: 29166 keys, 2214240 bytes
-2025/10/06-00:46:52.712 2b3 Generated table #1066@1: 47823 keys, 2276215 bytes
-2025/10/06-00:46:52.900 2b3 Generated table #1067@1: 22872 keys, 2201411 bytes
-2025/10/06-00:46:53.154 2b3 Generated table #1068@1: 100332 keys, 2251033 bytes
-2025/10/06-00:46:53.189 2b3 Generated table #1069@1: 20480 keys, 459483 bytes
-2025/10/06-00:46:53.189 2b3 Compacted 1@1 + 10@2 files => 20451920 bytes
-2025/10/06-00:46:53.197 2b3 compacted to: files[ 0 0 10 0 0 0 0 ]
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1047
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1048
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1049
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1050
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1051
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1052
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1053
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1054
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1055
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1056
-2025/10/06-00:46:53.198 2b3 Delete type=2 #1059
+2025/10/06-00:52:37.650 55a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-00:52:37.651 55a Recovering log #1058
+2025/10/06-00:52:37.668 55a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001058.log 
+2025/10/06-00:52:38.793 56d Level-0 table #1072: started
+2025/10/06-00:52:38.821 56d Level-0 table #1072: 933304 bytes OK
+2025/10/06-00:52:38.837 56d Delete type=0 #1058
+2025/10/06-00:52:38.851 560 Manual compaction at level-0 from '\x00t\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00u\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-00:52:42.258 55b Compacting 1@1 + 10@2 files
+2025/10/06-00:52:42.530 55b Generated table #1073@1: 84878 keys, 2234252 bytes
+2025/10/06-00:52:42.861 55b Generated table #1074@1: 81482 keys, 2264903 bytes
+2025/10/06-00:52:42.926 55b Generated table #1075@1: 7366 keys, 2158702 bytes
+2025/10/06-00:52:42.998 55b Generated table #1076@1: 10032 keys, 2168927 bytes
+2025/10/06-00:52:43.145 55b Generated table #1077@1: 23195 keys, 2218751 bytes
+2025/10/06-00:52:43.266 55b Generated table #1078@1: 26369 keys, 2211950 bytes
+2025/10/06-00:52:43.427 55b Generated table #1079@1: 49867 keys, 2274480 bytes
+2025/10/06-00:52:43.605 55b Generated table #1080@1: 24261 keys, 2215640 bytes
+2025/10/06-00:52:43.894 55b Generated table #1081@1: 94973 keys, 2244439 bytes
+2025/10/06-00:52:43.971 55b Generated table #1082@1: 26852 keys, 597077 bytes
+2025/10/06-00:52:43.971 55b Compacted 1@1 + 10@2 files => 20589121 bytes
+2025/10/06-00:52:43.978 55b compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/10/06-00:52:43.979 55b Delete type=2 #1060
+2025/10/06-00:52:43.979 55b Delete type=2 #1061
+2025/10/06-00:52:43.979 55b Delete type=2 #1062
+2025/10/06-00:52:43.979 55b Delete type=2 #1063
+2025/10/06-00:52:43.979 55b Delete type=2 #1064
+2025/10/06-00:52:43.979 55b Delete type=2 #1065
+2025/10/06-00:52:43.979 55b Delete type=2 #1066
+2025/10/06-00:52:43.979 55b Delete type=2 #1067
+2025/10/06-00:52:43.979 55b Delete type=2 #1068
+2025/10/06-00:52:43.979 55b Delete type=2 #1069
+2025/10/06-00:52:43.979 55b Delete type=2 #1072
