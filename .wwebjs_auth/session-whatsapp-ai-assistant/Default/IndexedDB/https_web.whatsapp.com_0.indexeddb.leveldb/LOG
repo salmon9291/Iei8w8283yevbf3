@@ -1,27 +1,50 @@
-2025/10/06-01:08:07.459 c0a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-01:08:07.460 c0a Recovering log #1110
-2025/10/06-01:08:07.576 c0a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001110.log 
-2025/10/06-01:08:08.582 c08 Level-0 table #1124: started
-2025/10/06-01:08:08.754 c08 Level-0 table #1124: 1989371 bytes OK
-2025/10/06-01:08:08.767 c08 Delete type=0 #1110
-2025/10/06-01:08:08.768 c08 Manual compaction at level-0 from '\x00y\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00z\x00\x00\x00' @ 0 : 0; will stop at '\x00y\x00\x00\x05' @ 2903810 : 1
-2025/10/06-01:08:08.768 c08 Compacting 1@0 + 0@1 files
-2025/10/06-01:08:08.807 c08 Generated table #1125@0: 18180 keys, 562838 bytes
-2025/10/06-01:08:08.850 c08 Generated table #1126@0: 21 keys, 1379 bytes
-2025/10/06-01:08:08.850 c08 Compacted 1@0 + 0@1 files => 564217 bytes
-2025/10/06-01:08:08.856 c08 compacted to: files[ 0 2 10 0 0 0 0 ]
-2025/10/06-01:08:08.857 c08 Delete type=2 #1124
-2025/10/06-01:08:08.857 c08 Manual compaction at level-0 from '\x00y\x00\x00\x05' @ 2903810 : 1 .. '\x00z\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-01:08:11.109 c08 Compacting 1@1 + 10@2 files
-2025/10/06-01:08:11.371 c08 Generated table #1127@1: 85796 keys, 2236007 bytes
-2025/10/06-01:08:11.584 c08 Generated table #1128@1: 86664 keys, 2274388 bytes
-2025/10/06-01:08:11.691 c08 Generated table #1129@1: 8983 keys, 2158567 bytes
-2025/10/06-01:08:11.749 c08 Generated table #1130@1: 2645 keys, 2131839 bytes
-2025/10/06-01:08:11.822 c08 Generated table #1131@1: 25190 keys, 2236221 bytes
-2025/10/06-01:08:11.908 c08 Generated table #1132@1: 21283 keys, 2205333 bytes
-2025/10/06-01:08:12.086 c08 Generated table #1133@1: 51180 keys, 2256428 bytes
-2025/10/06-01:08:12.392 c08 Generated table #1134@1: 30610 keys, 2258333 bytes
-2025/10/06-01:08:12.610 c08 Generated table #1135@1: 67292 keys, 2208403 bytes
-2025/10/06-01:08:12.729 c08 Generated table #1136@1: 59987 keys, 1313221 bytes
-2025/10/06-01:08:12.729 c08 Compacted 1@1 + 10@2 files => 21278740 bytes
-2025/10/06-01:08:12.745 c08 compacted to: files[ 0 1 10 0 0 0 0 ]
+2025/10/06-01:10:02.291 dce Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-01:10:02.292 dce Recovering log #1123
+2025/10/06-01:10:02.306 dce Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001123.log 
+2025/10/06-01:10:02.307 dce Delete type=2 #1112
+2025/10/06-01:10:02.307 dce Delete type=2 #1113
+2025/10/06-01:10:02.307 dce Delete type=2 #1114
+2025/10/06-01:10:02.307 dce Delete type=2 #1115
+2025/10/06-01:10:02.307 dce Delete type=2 #1116
+2025/10/06-01:10:02.307 dce Delete type=2 #1117
+2025/10/06-01:10:02.307 dce Delete type=2 #1118
+2025/10/06-01:10:02.307 dce Delete type=2 #1119
+2025/10/06-01:10:02.307 dce Delete type=2 #1120
+2025/10/06-01:10:02.307 dce Delete type=2 #1121
+2025/10/06-01:10:02.307 dce Delete type=2 #1125
+2025/10/06-01:10:03.176 dc9 Level-0 table #1139: started
+2025/10/06-01:10:03.248 dc9 Level-0 table #1139: 795705 bytes OK
+2025/10/06-01:10:03.263 dc9 Delete type=0 #1123
+2025/10/06-01:10:03.263 dc9 Manual compaction at level-0 from '\x00z\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00{\x00\x00\x00' @ 0 : 0; will stop at '\x00z\x00\x00\x05' @ 2916160 : 1
+2025/10/06-01:10:03.263 dc9 Compacting 1@0 + 1@1 files
+2025/10/06-01:10:03.351 dc9 Generated table #1140@0: 7192 keys, 223962 bytes
+2025/10/06-01:10:03.361 dc9 Generated table #1141@0: 33 keys, 2286 bytes
+2025/10/06-01:10:03.362 dc9 Compacted 1@0 + 1@1 files => 226248 bytes
+2025/10/06-01:10:03.366 dc9 compacted to: files[ 0 2 10 0 0 0 0 ]
+2025/10/06-01:10:03.367 dc9 Delete type=2 #1139
+2025/10/06-01:10:03.367 dc7 Manual compaction at level-0 from '\x00z\x00\x00\x05' @ 2916160 : 1 .. '\x00{\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-01:10:05.851 dc9 Compacting 1@1 + 10@2 files
+2025/10/06-01:10:06.060 dc9 Generated table #1142@1: 85895 keys, 2236980 bytes
+2025/10/06-01:10:06.285 dc9 Generated table #1143@1: 87834 keys, 2274817 bytes
+2025/10/06-01:10:06.404 dc9 Generated table #1144@1: 9007 keys, 2157807 bytes
+2025/10/06-01:10:06.503 dc9 Generated table #1145@1: 1293 keys, 2127347 bytes
+2025/10/06-01:10:06.602 dc9 Generated table #1146@1: 25516 keys, 2235214 bytes
+2025/10/06-01:10:06.668 dc9 Generated table #1147@1: 21342 keys, 2205313 bytes
+2025/10/06-01:10:06.816 dc9 Generated table #1148@1: 50447 keys, 2253154 bytes
+2025/10/06-01:10:07.150 dc9 Generated table #1149@1: 32297 keys, 2260582 bytes
+2025/10/06-01:10:07.307 dc9 Generated table #1150@1: 61781 keys, 2201103 bytes
+2025/10/06-01:10:07.418 dc9 Generated table #1151@1: 65806 keys, 1439365 bytes
+2025/10/06-01:10:07.418 dc9 Compacted 1@1 + 10@2 files => 21391682 bytes
+2025/10/06-01:10:07.467 dc9 compacted to: files[ 0 1 10 0 0 0 0 ]
+2025/10/06-01:10:07.467 dc9 Delete type=2 #1126
+2025/10/06-01:10:07.468 dc9 Delete type=2 #1127
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1128
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1129
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1130
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1131
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1132
+2025/10/06-01:10:07.471 dc9 Delete type=2 #1133
+2025/10/06-01:10:07.472 dc9 Delete type=2 #1134
+2025/10/06-01:10:07.472 dc9 Delete type=2 #1135
+2025/10/06-01:10:07.472 dc9 Delete type=2 #1136
+2025/10/06-01:10:07.472 dc9 Delete type=2 #1140
