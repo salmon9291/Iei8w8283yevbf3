@@ -34,16 +34,15 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Usar yt-dlp con opciones mejoradas para evitar 403:
+      // Usar yt-dlp con cliente iOS para evitar 403:
+      // --extractor-args "youtube:player_client=ios" : usar cliente iOS (no bloqueado)
       // --no-check-certificates : evitar problemas de SSL
-      // --user-agent : usar un user agent de navegador moderno
-      // --referer "https://www.youtube.com/" : enviar referer correcto
-      // -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/worst[ext=mp4]" : formatos compatibles
+      // -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/worst" : mejores formatos disponibles
       // --merge-output-format mp4 : forzar salida en mp4
       // --no-playlist : solo descargar un video
       // --max-filesize 64M : limitar tamaño
-      // --cookies-from-browser firefox : intentar usar cookies del navegador si están disponibles
-      const command = `yt-dlp --no-check-certificates --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" --referer "https://www.youtube.com/" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<32M]+bestaudio[ext=m4a]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      // --socket-timeout 30 : timeout de socket
+      const command = `yt-dlp --extractor-args "youtube:player_client=ios" --no-check-certificates -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/worst" --merge-output-format mp4 --no-playlist --max-filesize 64M --socket-timeout 30 -o "${outputPath}" "${url}"`;
       
       console.log('Ejecutando comando yt-dlp:', command);
       
