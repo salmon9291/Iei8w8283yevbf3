@@ -38,15 +38,29 @@ class WhatsAppService {
         // Descargar con yt-dlp
         console.log('📥 Downloading Instagram video with yt-dlp...');
         try {
-          const ytdlpCommand = `yt-dlp \
-            --no-check-certificates \
-            -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
+          // Obtener credenciales de Instagram de las variables de entorno
+          const igUsername = process.env.INSTAGRAM_USERNAME;
+          const igPassword = process.env.INSTAGRAM_PASSWORD;
+
+          // Construir comando con o sin credenciales
+          let ytdlpCommand = 'yt-dlp --no-check-certificates';
+          
+          // Agregar autenticación si las credenciales están disponibles
+          if (igUsername && igPassword) {
+            console.log('Using Instagram credentials for authentication');
+            ytdlpCommand += ` --username "${igUsername}" --password "${igPassword}"`;
+          } else {
+            console.log('No Instagram credentials found, attempting public download');
+          }
+          
+          ytdlpCommand += ` -f "best[ext=mp4][filesize<64M]/best[filesize<64M]" \
             --merge-output-format mp4 \
             --no-playlist \
             --max-filesize 64M \
             -o "${outputPath}" \
             "${url}"`;
-          console.log('yt-dlp command:', ytdlpCommand);
+          
+          console.log('yt-dlp command (credentials hidden):', ytdlpCommand.replace(igPassword || '', '***'));
 
           const ytdlpResult = await execAsync(ytdlpCommand);
           console.log('yt-dlp result:', ytdlpResult);
@@ -60,6 +74,13 @@ class WhatsAppService {
           console.error('yt-dlp failed:', ytdlpError);
           console.error('Error message:', ytdlpError.message);
           console.error('Error stderr:', ytdlpError.stderr);
+          
+          // Mensaje de error más específico
+          const errorMsg = ytdlpError.stderr || ytdlpError.message || '';
+          if (errorMsg.includes('login required') || errorMsg.includes('rate-limit')) {
+            throw new Error('Este video requiere autenticación. Por favor configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD en Secrets.');
+          }
+          
           throw new Error(`Failed to download Instagram video: ${ytdlpError.message}`);
         }
       } else {
