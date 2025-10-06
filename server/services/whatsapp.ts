@@ -90,7 +90,7 @@ class WhatsAppService {
 
     const puppeteerConfig: any = {
       headless: true,
-      timeout: 60000,
+      timeout: 90000,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -108,7 +108,9 @@ class WhatsAppService {
         '--disable-features=TranslateUI',
         '--disable-ipc-flooding-protection',
         '--memory-pressure-off',
-        '--max_old_space_size=4096'
+        '--max_old_space_size=4096',
+        '--disable-blink-features=AutomationControlled',
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
       ]
     };
 
@@ -122,7 +124,11 @@ class WhatsAppService {
       authStrategy: new LocalAuth({
         clientId: "whatsapp-ai-assistant"
       }),
-      puppeteer: puppeteerConfig
+      puppeteer: puppeteerConfig,
+      webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1027836149-alpha.html',
+      }
     });
 
     this.setupEventHandlers();
@@ -386,11 +392,13 @@ class WhatsAppService {
     });
   }
 
-  async initialize(usePairingCode: boolean = false, phoneNumber?: string) {
+  async initialize(usePairingCode: boolean = false, phoneNumber?: string, retryCount: number = 0) {
     if (this.isConnecting || this.isReady) {
       console.log('Ya está inicializando o listo');
       return;
     }
+
+    const maxRetries = 3;
 
     try {
       this.isConnecting = true;
@@ -400,7 +408,7 @@ class WhatsAppService {
         throw new Error('Se requiere número de teléfono para el método de código de emparejamiento');
       }
 
-      console.log(`→ Paso 1: Inicializando cliente de WhatsApp con ${usePairingCode ? 'código de emparejamiento' : 'QR'}...`);
+      console.log(`→ Paso 1: Inicializando cliente de WhatsApp con ${usePairingCode ? 'código de emparejamiento' : 'QR'}... (intento ${retryCount + 1}/${maxRetries + 1})`);
 
       await this.initializeClient();
       console.log('→ Paso 2: Cliente creado, inicializando conexión...');
@@ -414,7 +422,7 @@ class WhatsAppService {
       // Set a timeout for initialization
       const initPromise = this.client.initialize();
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: WhatsApp initialization took too long')), 120000);
+        setTimeout(() => reject(new Error('Timeout: WhatsApp initialization took too long')), 150000);
       });
 
       await Promise.race([initPromise, timeoutPromise]);
@@ -440,6 +448,13 @@ class WhatsAppService {
         }
         this.client = null;
         this.isInitialized = false;
+      }
+
+      // Reintentar si el error es de contexto destruido y aún tenemos reintentos
+      if (error?.message?.includes('Execution context was destroyed') && retryCount < maxRetries) {
+        console.log(`⟳ Reintentando inicialización en 5 segundos... (${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return this.initialize(usePairingCode, phoneNumber, retryCount + 1);
       }
 
       throw error;
