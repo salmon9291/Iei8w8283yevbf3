@@ -1,19 +1,13 @@
-2025/10/06-01:30:23.830 a4b Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/06-01:30:23.831 a4b Recovering log #1199
-2025/10/06-01:30:23.938 a4b Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001199.log 
-2025/10/06-01:30:24.773 a4f Level-0 table #1212: started
-2025/10/06-01:30:24.867 a4f Level-0 table #1212: 1220321 bytes OK
-2025/10/06-01:30:24.885 a4f Delete type=0 #1199
-2025/10/06-01:30:24.886 a4b Manual compaction at level-0 from '\x00r\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00s\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-01:30:27.731 a4d Compacting 1@1 + 9@2 files
-2025/10/06-01:30:27.894 a4d Generated table #1213@1: 85438 keys, 2234796 bytes
-2025/10/06-01:30:28.176 a4d Generated table #1214@1: 74172 keys, 2258816 bytes
-2025/10/06-01:30:28.265 a4d Generated table #1215@1: 2306 keys, 2149479 bytes
-2025/10/06-01:30:28.425 a4d Generated table #1216@1: 15901 keys, 2197881 bytes
-2025/10/06-01:30:28.682 a4d Generated table #1217@1: 21603 keys, 2206668 bytes
-2025/10/06-01:30:28.865 a4d Generated table #1218@1: 42674 keys, 2228838 bytes
-2025/10/06-01:30:29.287 a4d Generated table #1219@1: 36995 keys, 2288168 bytes
-2025/10/06-01:30:29.401 a4d Generated table #1220@1: 46299 keys, 2186127 bytes
-2025/10/06-01:30:29.563 a4d Generated table #1221@1: 82483 keys, 1791991 bytes
-2025/10/06-01:30:29.564 a4d Compacted 1@1 + 9@2 files => 19542764 bytes
-2025/10/06-01:30:29.571 a4d compacted to: files[ 0 0 9 0 0 0 0 ]
+2025/10/06-01:33:38.727 d6a Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-01:33:38.727 d6a Recovering log #1223
+2025/10/06-01:33:38.837 d6a Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001223.log 
+2025/10/06-01:33:39.723 d6a Level-0 table #1236: started
+2025/10/06-01:33:39.813 d6a Level-0 table #1236: 1818548 bytes OK
+2025/10/06-01:33:39.835 d6a Delete type=0 #1223
+2025/10/06-01:33:39.836 d63 Manual compaction at level-0 from '\x00t\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00u\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-01:33:42.551 d65 Compacting 1@1 + 9@2 files
+2025/10/06-01:33:42.762 d65 Generated table #1237@1: 85576 keys, 2234727 bytes
+2025/10/06-01:33:43.390 d65 Generated table #1238@1: 76061 keys, 2257578 bytes
+2025/10/06-01:33:43.672 d65 Generated table #1239@1: 3117 keys, 2149605 bytes
+2025/10/06-01:33:44.464 d65 compacted to: files[ 0 1 9 0 0 0 0 ]
+2025/10/06-01:33:44.464 d65 Compaction error: IO error: /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/001240.ldb: FILE_ERROR_FAILED (ChromeMethodBFE: 3::WritableFileAppend::1)
