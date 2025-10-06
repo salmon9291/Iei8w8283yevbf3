@@ -1,6 +1,6 @@
 import whatsappWeb from 'whatsapp-web.js';
 import QRCode from 'qrcode';
-import { generateChatResponse } from './gemini';
+import { generateChatResponse, analyzeImage } from './gemini';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { storage } from '../storage';
@@ -250,6 +250,46 @@ class WhatsAppService {
         const userId = `whatsapp_${contact.number || chat.id._serialized}`;
 
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
+
+        // Detectar si el mensaje tiene imagen/media
+        if (message.hasMedia) {
+          try {
+            const media = await message.downloadMedia();
+            
+            if (media && (media.mimetype.startsWith('image/') || media.mimetype === 'image/webp')) {
+              await message.reply('🔍 Analizando imagen...');
+              
+              const imageBuffer = Buffer.from(media.data, 'base64');
+              const settings = await storage.getSettings();
+              const apiKey = settings.geminiApiKey || undefined;
+              
+              // Usar el texto del mensaje como prompt, o uno por defecto
+              const prompt = message.body || "Describe esta imagen en detalle en español";
+              
+              const analysis = await analyzeImage(imageBuffer, prompt, apiKey);
+              
+              await storage.createMessage({
+                content: `[Imagen recibida] ${message.body || ''}`,
+                sender: 'user',
+                username: userId
+              });
+              
+              await storage.createMessage({
+                content: analysis,
+                sender: 'assistant',
+                username: userId
+              });
+              
+              await message.reply(analysis);
+              console.log('Imagen analizada y respuesta enviada');
+              return; // No continuar con procesamiento de texto
+            }
+          } catch (error) {
+            console.error('Error analizando imagen:', error);
+            await message.reply('❌ Error al analizar la imagen. Intenta de nuevo.');
+            return;
+          }
+        }
 
         // Detectar comando de descarga de YouTube
         const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/[^\s]+)/i;
