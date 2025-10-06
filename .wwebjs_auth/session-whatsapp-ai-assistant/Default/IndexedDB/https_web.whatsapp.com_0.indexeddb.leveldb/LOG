@@ -17,3 +17,20 @@
 2025/10/06-01:58:03.647 682 Delete type=2 #1483
 2025/10/06-01:58:03.647 682 Delete type=2 #1484
 2025/10/06-01:58:03.647 682 Delete type=2 #1487
+2025/10/06-02:03:04.451 67c Level-0 table #1493: started
+2025/10/06-02:03:04.495 67c Level-0 table #1493: 1111394 bytes OK
+2025/10/06-02:03:04.511 67c Delete type=0 #1486
+2025/10/06-02:03:04.513 67c Manual compaction at level-0 from '\x00\x9b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9c\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-02:03:10.497 67c Compacting 1@1 + 4@2 files
+2025/10/06-02:03:10.591 67c Generated table #1494@1: 32725 keys, 2195654 bytes
+2025/10/06-02:03:10.658 67c Generated table #1495@1: 3317 keys, 2145569 bytes
+2025/10/06-02:03:10.740 67c Generated table #1496@1: 24261 keys, 2196161 bytes
+2025/10/06-02:03:10.836 67c Generated table #1497@1: 108581 keys, 2261669 bytes
+2025/10/06-02:03:10.848 67c Generated table #1498@1: 2768 keys, 63568 bytes
+2025/10/06-02:03:10.848 67c Compacted 1@1 + 4@2 files => 8862621 bytes
+2025/10/06-02:03:10.858 67c compacted to: files[ 0 0 5 0 0 0 0 ]
+2025/10/06-02:03:10.858 67c Delete type=2 #1488
+2025/10/06-02:03:10.858 67c Delete type=2 #1489
+2025/10/06-02:03:10.858 67c Delete type=2 #1490
+2025/10/06-02:03:10.858 67c Delete type=2 #1491
+2025/10/06-02:03:10.859 67c Delete type=2 #1493
