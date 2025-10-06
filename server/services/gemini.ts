@@ -13,39 +13,6 @@ export interface ChatMessage {
   parts: string;
 }
 
-export async function analyzeImage(
-  imageBuffer: Buffer,
-  prompt: string = "Describe esta imagen en detalle",
-  apiKey?: string
-): Promise<string> {
-  const ai = apiKey ? new GoogleGenAI({ apiKey }) : defaultAi;
-  
-  try {
-    const base64Image = imageBuffer.toString('base64');
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{
-        role: 'user',
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: base64Image
-            }
-          }
-        ]
-      }]
-    });
-
-    return response.text || "No pude analizar la imagen.";
-  } catch (error) {
-    console.error("Error analizando imagen:", error);
-    throw new Error("Failed to analyze image");
-  }
-}
-
 export async function generateChatResponse(
   message: string, 
   username: string, 

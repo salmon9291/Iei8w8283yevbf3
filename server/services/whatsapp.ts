@@ -1,6 +1,6 @@
 import whatsappWeb from 'whatsapp-web.js';
 import QRCode from 'qrcode';
-import { generateChatResponse, analyzeImage } from './gemini';
+import { generateChatResponse } from './gemini';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { storage } from '../storage';
@@ -34,28 +34,26 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Estrategia mejorada: usar múltiples métodos para evitar bloqueos
-      // 1. Primero actualizar yt-dlp
-      try {
-        await execAsync('yt-dlp -U', { timeout: 30000 });
-        console.log('yt-dlp actualizado correctamente');
-      } catch (updateError) {
-        console.log('No se pudo actualizar yt-dlp, continuando con versión actual');
-      }
-
-      // 2. Usar configuración mejorada sin cliente Android
-      const command = `yt-dlp --no-check-certificate --extractor-args "youtube:player_client=web" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<64M]+bestaudio[ext=m4a]/best[filesize<64M]" --merge-output-format mp4 --no-playlist --max-filesize 64M --no-warnings -o "${outputPath}" "${url}"`;
-
-      console.log('Ejecutando comando yt-dlp para YouTube con configuración mejorada');
-
-      const { stdout, stderr } = await execAsync(command, {
-        timeout: 180000
+      // Usar yt-dlp para descargar el video con múltiples intentos de formato
+      // Opciones para evitar restricciones de YouTube:
+      // --extractor-args "youtube:player_client=android" : usar cliente Android para evitar restricciones
+      // -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" : formato simple que suele funcionar mejor
+      // --merge-output-format mp4 : forzar salida en mp4
+      // --no-playlist : solo descargar un video
+      // --max-filesize 64M : limitar tamaño
+      // -o : especificar ruta de salida
+      const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      
+      console.log('Ejecutando comando yt-dlp:', command);
+      
+      const { stdout, stderr } = await execAsync(command, { 
+        timeout: 120000 // 2 minutos timeout
       });
-
+      
       if (stderr && !stderr.includes('Deleting original file')) {
         console.log('yt-dlp stderr:', stderr);
       }
-
+      
       console.log('yt-dlp stdout:', stdout);
 
       // Verificar que el archivo existe
@@ -260,66 +258,28 @@ class WhatsAppService {
 
         console.log(`Mensaje recibido de ${userName} en chat ${chatType}: ${message.body}`);
 
-        // Detectar si el mensaje tiene imagen/media
-        if (message.hasMedia) {
-          try {
-            const media = await message.downloadMedia();
-            
-            if (media && (media.mimetype.startsWith('image/') || media.mimetype === 'image/webp')) {
-              await message.reply('🔍 Analizando imagen...');
-              
-              const imageBuffer = Buffer.from(media.data, 'base64');
-              const settings = await storage.getSettings();
-              const apiKey = settings.geminiApiKey || undefined;
-              
-              // Usar el texto del mensaje como prompt, o uno por defecto
-              const prompt = message.body || "Describe esta imagen en detalle en español";
-              
-              const analysis = await analyzeImage(imageBuffer, prompt, apiKey);
-              
-              await storage.createMessage({
-                content: `[Imagen recibida] ${message.body || ''}`,
-                sender: 'user',
-                username: userId
-              });
-              
-              await storage.createMessage({
-                content: analysis,
-                sender: 'assistant',
-                username: userId
-              });
-              
-              await message.reply(analysis);
-              console.log('Imagen analizada y respuesta enviada');
-              return; // No continuar con procesamiento de texto
-            }
-          } catch (error) {
-            console.error('Error analizando imagen:', error);
-            await message.reply('❌ Error al analizar la imagen. Intenta de nuevo.');
-            return;
-          }
-        }
-
         // Detectar comando de descarga de YouTube
-        const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/[^\s]+)/i;
-        const youtubeMatch = message.body.match(youtubeDownloadRegex);
-
+        const youtubeDownloadRegex = /^\/descarga\s+yt\s+(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/i;
+        const match = message.body.match(youtubeDownloadRegex);
+        
         console.log('DEBUG - Buscando comando de descarga en:', message.body);
-        console.log('DEBUG - YouTube Match:', youtubeMatch);
+        console.log('DEBUG - Match resultado:', match);
 
-        if (youtubeMatch) {
-          const videoUrl = youtubeMatch[1];
-
+        if (match) {
+          // Extraer URL completa del video
+          const videoId = match[4];
+          const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+          
           try {
             await message.reply('🎥 Descargando video de YouTube, esto puede tomar unos minutos...');
-
+            
             const videoPath = await this.downloadYouTubeVideo(videoUrl);
-
+            
             if (videoPath && fs.existsSync(videoPath)) {
               // Verificar el tamaño del archivo
               const stats = fs.statSync(videoPath);
               const fileSizeMB = stats.size / (1024 * 1024);
-
+              
               if (fileSizeMB > 64) {
                 await message.reply(`❌ El video es demasiado grande (${fileSizeMB.toFixed(2)}MB). WhatsApp solo permite archivos de hasta 64MB.`);
                 // Eliminar el archivo descargado
@@ -327,11 +287,11 @@ class WhatsAppService {
               } else {
                 // Crear media desde el archivo
                 const media = MessageMedia.fromFilePath(videoPath);
-
+                
                 // Enviar el video
                 await message.reply(media, undefined, { caption: '✅ Aquí está tu video de YouTube' });
-                console.log(`Video de YouTube enviado exitosamente: ${videoPath}`);
-
+                console.log(`Video enviado exitosamente: ${videoPath}`);
+                
                 // Eliminar el archivo después de enviarlo
                 setTimeout(() => {
                   if (fs.existsSync(videoPath)) {
@@ -347,7 +307,7 @@ class WhatsAppService {
             console.error('Error procesando descarga de YouTube:', error);
             await message.reply(`❌ Error al descargar el video: ${error.message || 'Error desconocido'}`);
           }
-
+          
           return; // No continuar con el procesamiento normal de Gemini
         }
 
@@ -363,25 +323,25 @@ class WhatsAppService {
 
         // Get current date for context
         const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
+        const dateStr = now.toLocaleDateString('es-ES', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
         });
 
         // Verificar si el número está en la lista restringida
         const isRestricted = storage.isRestrictedNumber(contact.number || chat.id._serialized);
-
+        
         // Obtener API key y custom prompt de settings
         const apiKey = settings.geminiApiKey || undefined;
-        const customPrompt = isRestricted
+        const customPrompt = isRestricted 
           ? (settings.restrictedPrompt || undefined)
           : (settings.customPrompt || undefined);
 
         // Generar respuesta de IA con historial completo (sin duplicar el mensaje actual)
         const aiResponse = await generateChatResponse(
-          message.body,
+          message.body, 
           userName,
           customPrompt,
           conversationHistory,
@@ -409,15 +369,15 @@ class WhatsAppService {
         console.log(`Respuesta enviada en ${chatType}: ${aiResponse.substring(0, 50)}...`);
       } catch (error: any) {
         console.error('Error procesando mensaje:', error);
-
+        
         // Informar al usuario sobre el error
         try {
           let errorMessage = 'Lo siento, ocurrió un error al procesar tu mensaje.';
-
+          
           if (error?.message?.includes('quota') || error?.message?.includes('429')) {
             errorMessage = 'Lo siento, se ha excedido el límite de la API de Gemini. Por favor, contacta al administrador para configurar una API key propia o espera a que se resetee el límite diario.';
           }
-
+          
           await message.reply(errorMessage);
         } catch (replyError) {
           console.error('Error enviando mensaje de error:', replyError);
