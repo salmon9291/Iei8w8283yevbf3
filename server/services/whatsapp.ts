@@ -44,7 +44,7 @@ class WhatsAppService {
       }
 
       // 2. Usar configuración mejorada sin cliente Android
-      const command = `yt-dlp --no-check-certificate --extractor-args "youtube:player_client=web" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<64M]+bestaudio[ext=m4a]/best[filesize<64M]" --merge-output-format mp4 --no-playlist --max-filesize 64M --cookies-from-browser chrome --no-warnings -o "${outputPath}" "${url}"`;
+      const command = `yt-dlp --no-check-certificate --extractor-args "youtube:player_client=web" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<64M]+bestaudio[ext=m4a]/best[filesize<64M]" --merge-output-format mp4 --no-playlist --max-filesize 64M --no-warnings -o "${outputPath}" "${url}"`;
 
       console.log('Ejecutando comando yt-dlp para YouTube con configuración mejorada');
 
