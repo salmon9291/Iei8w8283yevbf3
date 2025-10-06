@@ -34,10 +34,19 @@ class WhatsAppService {
       const outputFileName = `video_${Date.now()}.mp4`;
       const outputPath = path.join(downloadsDir, outputFileName);
 
-      // Para YouTube: usar cliente Android para evitar restricciones
-      const command = `yt-dlp --extractor-args "youtube:player_client=android" -f "best[ext=mp4][filesize<64M]/worst[ext=mp4]" --merge-output-format mp4 --no-playlist --max-filesize 64M -o "${outputPath}" "${url}"`;
+      // Estrategia mejorada: usar múltiples métodos para evitar bloqueos
+      // 1. Primero actualizar yt-dlp
+      try {
+        await execAsync('yt-dlp -U', { timeout: 30000 });
+        console.log('yt-dlp actualizado correctamente');
+      } catch (updateError) {
+        console.log('No se pudo actualizar yt-dlp, continuando con versión actual');
+      }
 
-      console.log('Ejecutando comando yt-dlp para YouTube');
+      // 2. Usar configuración mejorada sin cliente Android
+      const command = `yt-dlp --no-check-certificate --extractor-args "youtube:player_client=web" -f "best[ext=mp4][filesize<64M]/bestvideo[ext=mp4][filesize<64M]+bestaudio[ext=m4a]/best[filesize<64M]" --merge-output-format mp4 --no-playlist --max-filesize 64M --cookies-from-browser chrome --no-warnings -o "${outputPath}" "${url}"`;
+
+      console.log('Ejecutando comando yt-dlp para YouTube con configuración mejorada');
 
       const { stdout, stderr } = await execAsync(command, {
         timeout: 180000
