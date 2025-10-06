@@ -1,29 +1,29 @@
-2025/10/05-23:59:07.895 d20 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/10/05-23:59:07.896 d20 Recovering log #940
-2025/10/05-23:59:07.996 d20 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000940.log 
-2025/10/05-23:59:09.757 d24 Manual compaction at level-0 from '\x00o\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00p\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/10/06-00:00:31.920 d20 Level-0 table #953: started
-2025/10/06-00:00:31.983 d20 Level-0 table #953: 2043429 bytes OK
-2025/10/06-00:00:32.001 d20 Delete type=0 #940
-2025/10/06-00:00:34.891 d1e Compacting 1@1 + 9@2 files
-2025/10/06-00:00:35.024 d1e Generated table #954@1: 86031 keys, 2235346 bytes
-2025/10/06-00:00:35.106 d1e Generated table #955@1: 68163 keys, 2251324 bytes
-2025/10/06-00:00:35.157 d1e Generated table #956@1: 2248 keys, 2149829 bytes
-2025/10/06-00:00:35.249 d1e Generated table #957@1: 20085 keys, 2218056 bytes
-2025/10/06-00:00:35.353 d1e Generated table #958@1: 21420 keys, 2205560 bytes
-2025/10/06-00:00:35.501 d1e Generated table #959@1: 47108 keys, 2244551 bytes
-2025/10/06-00:00:35.626 d1e Generated table #960@1: 32504 keys, 2261399 bytes
-2025/10/06-00:00:35.701 d1e Generated table #961@1: 68967 keys, 2212497 bytes
-2025/10/06-00:00:35.761 d1e Generated table #962@1: 52458 keys, 1146041 bytes
-2025/10/06-00:00:35.761 d1e Compacted 1@1 + 9@2 files => 18924603 bytes
-2025/10/06-00:00:35.774 d1e compacted to: files[ 0 0 9 0 0 0 0 ]
-2025/10/06-00:00:35.775 d1e Delete type=2 #942
-2025/10/06-00:00:35.775 d1e Delete type=2 #943
-2025/10/06-00:00:35.775 d1e Delete type=2 #944
-2025/10/06-00:00:35.775 d1e Delete type=2 #945
-2025/10/06-00:00:35.775 d1e Delete type=2 #946
-2025/10/06-00:00:35.775 d1e Delete type=2 #947
-2025/10/06-00:00:35.775 d1e Delete type=2 #948
-2025/10/06-00:00:35.775 d1e Delete type=2 #949
-2025/10/06-00:00:35.775 d1e Delete type=2 #950
-2025/10/06-00:00:35.775 d1e Delete type=2 #953
+2025/10/06-00:09:18.920 ff8 Reusing MANIFEST /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/06-00:09:18.921 ff8 Recovering log #952
+2025/10/06-00:09:19.018 ff8 Reusing old log /home/runner/workspace/.wwebjs_auth/session-whatsapp-ai-assistant/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000952.log 
+2025/10/06-00:09:20.060 ff3 Level-0 table #965: started
+2025/10/06-00:09:20.143 ff3 Level-0 table #965: 1144820 bytes OK
+2025/10/06-00:09:20.193 ff3 Delete type=0 #952
+2025/10/06-00:09:20.195 ff2 Manual compaction at level-0 from '\x00p\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00q\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/10/06-00:09:23.791 ff2 Compacting 1@1 + 9@2 files
+2025/10/06-00:09:24.091 ff2 Generated table #966@1: 85557 keys, 2235351 bytes
+2025/10/06-00:09:24.245 ff2 Generated table #967@1: 70847 keys, 2261080 bytes
+2025/10/06-00:09:24.347 ff2 Generated table #968@1: 2281 keys, 2147973 bytes
+2025/10/06-00:09:24.523 ff2 Generated table #969@1: 18981 keys, 2213818 bytes
+2025/10/06-00:09:24.766 ff2 Generated table #970@1: 21503 keys, 2205007 bytes
+2025/10/06-00:09:24.998 ff2 Generated table #971@1: 46172 keys, 2239611 bytes
+2025/10/06-00:09:25.368 ff2 Generated table #972@1: 35826 keys, 2277886 bytes
+2025/10/06-00:09:25.524 ff2 Generated table #973@1: 58078 keys, 2197530 bytes
+2025/10/06-00:09:25.656 ff2 Generated table #974@1: 64215 keys, 1398458 bytes
+2025/10/06-00:09:25.656 ff2 Compacted 1@1 + 9@2 files => 19176714 bytes
+2025/10/06-00:09:25.671 ff2 compacted to: files[ 0 0 9 0 0 0 0 ]
+2025/10/06-00:09:25.671 ff2 Delete type=2 #954
+2025/10/06-00:09:25.672 ff2 Delete type=2 #955
+2025/10/06-00:09:25.672 ff2 Delete type=2 #956
+2025/10/06-00:09:25.672 ff2 Delete type=2 #957
+2025/10/06-00:09:25.672 ff2 Delete type=2 #958
+2025/10/06-00:09:25.672 ff2 Delete type=2 #959
+2025/10/06-00:09:25.672 ff2 Delete type=2 #960
+2025/10/06-00:09:25.672 ff2 Delete type=2 #961
+2025/10/06-00:09:25.672 ff2 Delete type=2 #962
+2025/10/06-00:09:25.672 ff2 Delete type=2 #965
